@@ -24,6 +24,7 @@ from .models import (
     DeviceOverviewItem,
     DeviceStatisticsOverview,
     DeviceStatus,
+    DeviceWifiOta,
     EnergyFlow,
     EnergySource,
     EnvironmentalBenefit,
@@ -33,10 +34,13 @@ from .models import (
     PlaybackModule,
     PlaybackType,
     PowerParameter,
+    ProductFunction,
+    ProductInfo,
     ProductionStatistics,
     Site,
     SiteDetail,
     SiteDeviceSummary,
+    SiteLayout,
     SiteModulesData,
     SiteOverview,
     SiteStatusCounts,
@@ -80,7 +84,11 @@ __all__ = [
     "DeviceStatisticsOverview",
     "DeviceOverviewItem",
     "DeviceModules",
+    "DeviceWifiOta",
     "PowerParameter",
+    # Product models
+    "ProductFunction",
+    "ProductInfo",
     # Module models
     "Module",
     # Site models
@@ -88,6 +96,7 @@ __all__ = [
     "SiteDetail",
     "SiteOverview",
     "SiteDeviceSummary",
+    "SiteLayout",
     "SiteModulesData",
     "SiteStatusCounts",
     # Chart models

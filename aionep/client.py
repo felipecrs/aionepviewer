@@ -17,12 +17,15 @@ from .models import (
     Device,
     DeviceDetail,
     DeviceStatisticsOverview,
+    DeviceWifiOta,
     OverviewData,
     PlaybackData,
     PlaybackType,
     PowerParameter,
+    ProductInfo,
     Site,
     SiteDetail,
+    SiteLayout,
     SiteModulesData,
     SiteOverview,
     SiteStatusCounts,
@@ -429,3 +432,84 @@ class NepViewer:
             "POST", "/site/statistics/echarts", json_body=body
         )
         return ChartData.from_dict(data)
+
+    async def get_site_layout(self, sid: str) -> SiteLayout:
+        """Get the layout picture and scale for a site.
+
+        Parameters
+        ----------
+        sid:
+            Site ID.
+        """
+        data = await self._auth.request(
+            "POST", "/site/layoutInfo", json_body={"sid": sid}
+        )
+        return SiteLayout.from_dict(data)
+
+    # ------------------------------------------------------------------
+    # Product Info
+    # ------------------------------------------------------------------
+
+    async def get_product_info(self, serial_numbers: list[str]) -> list[ProductInfo]:
+        """Get product model and capability info for one or more serial numbers.
+
+        Returns model name, supported functions (parameter settings, network
+        config, power switching), and connectivity signals (MQTT, Bluetooth,
+        AT command, AP).
+
+        Parameters
+        ----------
+        serial_numbers:
+            List of device serial numbers to look up.
+        """
+        data = await self._auth.request(
+            "POST", "/product/sn/info", json_body={"sn": serial_numbers}
+        )
+        return [ProductInfo.from_dict(p) for p in data.get("list", [])]
+
+    # ------------------------------------------------------------------
+    # Device WiFi OTA
+    # ------------------------------------------------------------------
+
+    async def get_device_wifi_ota(
+        self, devices: list[tuple[str, str]]
+    ) -> list[DeviceWifiOta]:
+        """Check WiFi firmware OTA status for one or more devices.
+
+        Parameters
+        ----------
+        devices:
+            List of ``(sn, wifi_version)`` tuples.  Pass an empty string
+            for ``wifi_version`` to just query the current version.
+
+        Returns
+        -------
+        list[DeviceWifiOta]
+            OTA info per device, including current version and update advice.
+        """
+        payload = [{"sn": sn, "wifiVersion": ver} for sn, ver in devices]
+        data = await self._auth.request(
+            "POST", "/device/detailWifiOta", json_body={"wifiSn": payload}
+        )
+        # Response data is a list directly (not wrapped in a "list" key)
+        if isinstance(data, list):
+            return [DeviceWifiOta.from_dict(d) for d in data]
+        return [DeviceWifiOta.from_dict(d) for d in data.get("list", [])]
+
+    async def update_device_wifi_version(
+        self, devices: list[tuple[str, str]]
+    ) -> None:
+        """Report the current WiFi firmware version for devices to the server.
+
+        This is typically called by the Android app after connecting to a
+        device to keep the server's firmware records up to date.
+
+        Parameters
+        ----------
+        devices:
+            List of ``(sn, wifi_version)`` tuples.
+        """
+        payload = [{"sn": sn, "wifiVersion": ver} for sn, ver in devices]
+        await self._auth.request(
+            "POST", "/device/updateWifiVersion", json_body={"wifiSn": payload}
+        )

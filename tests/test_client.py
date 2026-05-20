@@ -15,8 +15,11 @@ from aionep.exceptions import NepApiError, NepAuthError
 
 from .conftest import (
     DEVICE_LIST_RESPONSE,
+    DEVICE_WIFI_OTA_RESPONSE,
     MODULES_RESPONSE,
+    PRODUCT_INFO_RESPONSE,
     SIGN_IN_RESPONSE,
+    SITE_LAYOUT_RESPONSE,
     SITE_LIST_RESPONSE,
     SITE_OVERVIEW_RESPONSE,
 )
@@ -136,6 +139,53 @@ async def test_api_error() -> None:
             with pytest.raises(NepApiError) as exc_info:
                 await client.get_devices()
             assert exc_info.value.code == 500
+
+
+@pytest.mark.asyncio
+async def test_get_product_info() -> None:
+    with aioresponses() as m:
+        _mock_sign_in(m)
+        m.post(f"{BASE}/product/sn/info", payload=PRODUCT_INFO_RESPONSE)
+
+        async with ClientSession() as session:
+            client = NepViewer(session, "test@example.com", "password")
+            products = await client.get_product_info(["86D4EC90"])
+
+        assert len(products) == 1
+        assert products[0].sn == "86D4EC90"
+        assert products[0].model_name == "BDM-2250"
+        assert len(products[0].functions) == 3
+        assert products[0].functions[0].signal_ap is True
+
+
+@pytest.mark.asyncio
+async def test_get_device_wifi_ota() -> None:
+    with aioresponses() as m:
+        _mock_sign_in(m)
+        m.post(f"{BASE}/device/detailWifiOta", payload=DEVICE_WIFI_OTA_RESPONSE)
+
+        async with ClientSession() as session:
+            client = NepViewer(session, "test@example.com", "password")
+            results = await client.get_device_wifi_ota([("86d33ec0", "")])
+
+        assert len(results) == 1
+        assert results[0].sn == "86d33ec0"
+        assert results[0].wifi_version == "3.01.25"
+        assert results[0].update_available is False
+
+
+@pytest.mark.asyncio
+async def test_get_site_layout() -> None:
+    with aioresponses() as m:
+        _mock_sign_in(m)
+        m.post(f"{BASE}/site/layoutInfo", payload=SITE_LAYOUT_RESPONSE)
+
+        async with ClientSession() as session:
+            client = NepViewer(session, "test@example.com", "password")
+            layout = await client.get_site_layout("BR_20260317_tXFI")
+
+        assert layout.sid == "BR_20260317_tXFI"
+        assert layout.site_name == "Test Site"
 
 
 def test_sign_header_computed() -> None:

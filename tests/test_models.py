@@ -11,6 +11,7 @@ from aionep.models import (
     DeviceDetail,
     DeviceModules,
     DeviceStatisticsOverview,
+    DeviceWifiOta,
     EnergyFlow,
     EnvironmentalBenefit,
     Module,
@@ -18,9 +19,12 @@ from aionep.models import (
     PlaybackData,
     PlaybackModule,
     PowerParameter,
+    ProductFunction,
+    ProductInfo,
     ProductionStatistics,
     Site,
     SiteDetail,
+    SiteLayout,
     SiteModulesData,
     SiteOverview,
     SiteStatusCounts,
@@ -290,3 +294,75 @@ class TestDateStatistics:
         ds = DateStatistics.from_dict(raw)
         assert ds.power == "5.5"
         assert ds.economic_unit == "USD"
+
+
+class TestProductInfo:
+    def test_from_dict(self) -> None:
+        raw = {
+            "sn": "86D4EC90",
+            "model": 11,
+            "modelName": "BDM-2250",
+            "funcList": [
+                {
+                    "func_id": 5,
+                    "func_name": "Parameter Settings",
+                    "signal_mqtt": False,
+                    "signal_bluetooth": False,
+                    "signal_at": False,
+                    "signal_ap": True,
+                },
+                {
+                    "func_id": 7,
+                    "func_name": "Power Switch",
+                    "signal_mqtt": False,
+                    "signal_bluetooth": False,
+                    "signal_at": True,
+                    "signal_ap": False,
+                },
+            ],
+            "is_exist": False,
+        }
+        info = ProductInfo.from_dict(raw)
+        assert info.sn == "86D4EC90"
+        assert info.model_name == "BDM-2250"
+        assert info.model == 11
+        assert info.is_exist is False
+        assert len(info.functions) == 2
+        assert info.functions[0].func_name == "Parameter Settings"
+        assert info.functions[0].signal_ap is True
+        assert info.functions[0].signal_mqtt is False
+        assert info.functions[1].signal_at is True
+
+
+class TestDeviceWifiOta:
+    def test_from_dict(self) -> None:
+        raw = {
+            "sn": "86d33ec0",
+            "wifiVersion": "3.01.25",
+            "advice": 2,
+            "address": "",
+        }
+        ota = DeviceWifiOta.from_dict(raw)
+        assert ota.sn == "86d33ec0"
+        assert ota.wifi_version == "3.01.25"
+        assert ota.advice == 2
+        assert ota.update_available is False
+
+    def test_update_available(self) -> None:
+        ota = DeviceWifiOta.from_dict({"sn": "ABC", "wifiVersion": "1.0", "advice": 1, "address": "http://fw.bin"})
+        assert ota.update_available is True
+
+
+class TestSiteLayout:
+    def test_from_dict(self) -> None:
+        raw = {
+            "sid": "BR_20260317_tXFI",
+            "siteName": "Test Site",
+            "layoutPic": "http://example.com/pic.jpg",
+            "layoutScale": 1.5,
+        }
+        layout = SiteLayout.from_dict(raw)
+        assert layout.sid == "BR_20260317_tXFI"
+        assert layout.site_name == "Test Site"
+        assert layout.layout_pic == "http://example.com/pic.jpg"
+        assert layout.layout_scale == 1.5

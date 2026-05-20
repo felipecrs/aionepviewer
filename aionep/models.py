@@ -1063,3 +1063,107 @@ class SiteStatusCounts:
             site_count=data.get("siteCount", 0),
             status_map=data.get("statusMap", {}),
         )
+
+
+# ---------------------------------------------------------------------------
+# Product / SN Info (Android-only)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class ProductFunction:
+    """A capability/function supported by a product (e.g. parameter settings, network config)."""
+
+    func_id: int
+    func_name: str
+    signal_mqtt: bool
+    signal_bluetooth: bool
+    signal_at: bool
+    signal_ap: bool
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> ProductFunction:
+        return cls(
+            func_id=data.get("func_id", 0),
+            func_name=data.get("func_name", ""),
+            signal_mqtt=data.get("signal_mqtt", False),
+            signal_bluetooth=data.get("signal_bluetooth", False),
+            signal_at=data.get("signal_at", False),
+            signal_ap=data.get("signal_ap", False),
+        )
+
+
+@dataclass
+class ProductInfo:
+    """Product information for a device serial number."""
+
+    sn: str
+    model: int
+    model_name: str
+    functions: list[ProductFunction]
+    is_exist: bool
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> ProductInfo:
+        return cls(
+            sn=data.get("sn", ""),
+            model=data.get("model", 0),
+            model_name=data.get("modelName", ""),
+            functions=[
+                ProductFunction.from_dict(f) for f in data.get("funcList", [])
+            ],
+            is_exist=data.get("is_exist", False),
+        )
+
+
+# ---------------------------------------------------------------------------
+# Device WiFi OTA (Android-only)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class DeviceWifiOta:
+    """WiFi firmware OTA status for a device."""
+
+    sn: str
+    wifi_version: str
+    advice: int
+    address: str
+
+    @property
+    def update_available(self) -> bool:
+        """Return ``True`` if a firmware update is recommended (advice != 2)."""
+        return self.advice != 2
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> DeviceWifiOta:
+        return cls(
+            sn=data.get("sn", ""),
+            wifi_version=data.get("wifiVersion", ""),
+            advice=data.get("advice", 2),
+            address=data.get("address", ""),
+        )
+
+
+# ---------------------------------------------------------------------------
+# Site Layout Info
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class SiteLayout:
+    """Site layout picture and scale information."""
+
+    sid: str
+    site_name: str
+    layout_pic: str
+    layout_scale: float
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> SiteLayout:
+        return cls(
+            sid=data.get("sid", ""),
+            site_name=data.get("siteName", ""),
+            layout_pic=data.get("layoutPic", ""),
+            layout_scale=data.get("layoutScale", 0),
+        )

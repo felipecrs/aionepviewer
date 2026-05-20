@@ -102,6 +102,18 @@ def _make_parser() -> argparse.ArgumentParser:
         help="Date (YYYY-MM-DD, default: today)",
     )
 
+    # ── product-info ────────────────────────────────────────────────────
+    p = sub.add_parser("product-info", help="Product model and capabilities by SN")
+    p.add_argument("sn", nargs="+", help="One or more device serial numbers")
+
+    # ── device-wifi-ota ─────────────────────────────────────────────────
+    p = sub.add_parser("device-wifi-ota", help="WiFi firmware OTA status")
+    p.add_argument("sn", nargs="+", help="One or more device serial numbers")
+
+    # ── site-layout ─────────────────────────────────────────────────────
+    p = sub.add_parser("site-layout", help="Site layout picture info")
+    p.add_argument("sid", help="Site ID")
+
     return parser
 
 
@@ -395,6 +407,51 @@ async def _cmd_device_playback(client: NepViewer, args: argparse.Namespace) -> A
     return pb
 
 
+async def _cmd_product_info(client: NepViewer, args: argparse.Namespace) -> Any:
+    products = await client.get_product_info(args.sn)
+    _header(f"Product Info ({len(products)} results)")
+    for p in products:
+        exists = "registered" if p.is_exist else "not registered"
+        print(f"  {p.sn} - {p.model_name} (model {p.model}) [{exists}]")
+        if p.functions:
+            print("    Capabilities:")
+            for f in p.functions:
+                signals = []
+                if f.signal_mqtt:
+                    signals.append("MQTT")
+                if f.signal_bluetooth:
+                    signals.append("Bluetooth")
+                if f.signal_at:
+                    signals.append("AT")
+                if f.signal_ap:
+                    signals.append("AP")
+                sig_str = ", ".join(signals) if signals else "none"
+                print(f"      {f.func_name} (via {sig_str})")
+        print()
+    return products
+
+
+async def _cmd_device_wifi_ota(client: NepViewer, args: argparse.Namespace) -> Any:
+    devices = [(sn, "") for sn in args.sn]
+    results = await client.get_device_wifi_ota(devices)
+    _header(f"WiFi OTA Status ({len(results)} devices)")
+    for d in results:
+        update = "UPDATE AVAILABLE" if d.update_available else "up to date"
+        print(f"  {d.sn} - WiFi {d.wifi_version or 'unknown'} [{update}]")
+        if d.address:
+            _kv("    Download", d.address)
+    return results
+
+
+async def _cmd_site_layout(client: NepViewer, args: argparse.Namespace) -> Any:
+    layout = await client.get_site_layout(args.sid)
+    _header(f"Site Layout: {layout.site_name}")
+    _kv("Site ID", layout.sid)
+    _kv("Layout picture", layout.layout_pic or "(none)")
+    _kv("Layout scale", layout.layout_scale)
+    return layout
+
+
 # ── dispatch ───────────────────────────────────────────────────────────
 
 COMMANDS = {
@@ -411,6 +468,9 @@ COMMANDS = {
     "device-params": _cmd_device_params,
     "device-energy": _cmd_device_energy,
     "device-playback": _cmd_device_playback,
+    "product-info": _cmd_product_info,
+    "device-wifi-ota": _cmd_device_wifi_ota,
+    "site-layout": _cmd_site_layout,
 }
 
 

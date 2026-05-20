@@ -277,3 +277,68 @@ MODULES_RESPONSE = {
         "is_all": True,
     },
 }
+
+PRODUCT_INFO_RESPONSE = {
+    "code": 200,
+    "msg": "Success",
+    "data": {
+        "list": [
+            {
+                "sn": "86D4EC90",
+                "model": 11,
+                "modelName": "BDM-2250",
+                "funcList": [
+                    {
+                        "func_id": 5,
+                        "func_name": "Parameter Settings",
+                        "signal_mqtt": False,
+                        "signal_bluetooth": False,
+                        "signal_at": False,
+                        "signal_ap": True,
+                    },
+                    {
+                        "func_id": 7,
+                        "func_name": "800~2000W Power Switch",
+                        "signal_mqtt": False,
+                        "signal_bluetooth": False,
+                        "signal_at": True,
+                        "signal_ap": False,
+                    },
+                    {
+                        "func_id": 1,
+                        "func_name": "Network Config",
+                        "signal_mqtt": False,
+                        "signal_bluetooth": False,
+                        "signal_at": False,
+                        "signal_ap": True,
+                    },
+                ],
+                "is_exist": False,
+            },
+        ],
+    },
+}
+
+DEVICE_WIFI_OTA_RESPONSE = {
+    "code": 200,
+    "msg": "Success",
+    "data": [
+        {
+            "sn": "86d33ec0",
+            "wifiVersion": "3.01.25",
+            "advice": 2,
+            "address": "",
+        },
+    ],
+}
+
+SITE_LAYOUT_RESPONSE = {
+    "code": 200,
+    "msg": "Success",
+    "data": {
+        "sid": "BR_20260317_tXFI",
+        "siteName": "Test Site",
+        "layoutPic": "",
+        "layoutScale": 0,
+    },
+}
