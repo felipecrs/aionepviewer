@@ -90,10 +90,12 @@ def get_host(args: argparse.Namespace) -> str:
 
 def dump_json(obj: Any) -> str:
     """Serialize a dataclass (or list of dataclasses) to indented JSON."""
-    if hasattr(obj, "__dataclass_fields__"):
+    import dataclasses
+
+    if dataclasses.is_dataclass(obj) and not isinstance(obj, type):
         return json.dumps(asdict(obj), indent=2, default=str)
     if isinstance(obj, list):
-        items = [asdict(o) if hasattr(o, "__dataclass_fields__") else o for o in obj]
+        items = [asdict(o) if dataclasses.is_dataclass(o) and not isinstance(o, type) else o for o in obj]
         return json.dumps(items, indent=2, default=str)
     return json.dumps(obj, indent=2, default=str)
 
