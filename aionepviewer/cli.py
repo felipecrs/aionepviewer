@@ -91,6 +91,30 @@ def _make_parser() -> argparse.ArgumentParser:
         help="Date: YYYY-MM-DD (day) or YYYY-MM (month)",
     )
 
+    # ── device-chart ─────────────────────────────────────────────────
+    p = sub.add_parser(
+        "device-chart",
+        help="Intraday chart data (e.g. Temperature, AC Voltage)",
+    )
+    p.add_argument("sn", help="Device serial number")
+    p.add_argument(
+        "lines",
+        nargs="*",
+        help="Parameter names to fetch (e.g. Temperature 'AC Voltage'). "
+        "Omit to list available parameters.",
+    )
+    p.add_argument(
+        "--date",
+        default=date.today().isoformat(),
+        help="Date (YYYY-MM-DD, default: today)",
+    )
+    p.add_argument(
+        "--all",
+        action="store_true",
+        dest="show_all",
+        help="Show all data points, not just the latest",
+    )
+
     # ── device-playback ────────────────────────────────────────────────
     p = sub.add_parser(
         "device-playback", help="5-min playback data for a device"
@@ -382,6 +406,59 @@ async def _cmd_device_energy(client: NepViewer, args: argparse.Namespace) -> Any
     return stats
 
 
+async def _cmd_device_chart(client: NepViewer, args: argparse.Namespace) -> Any:
+    if not args.lines:
+        # No lines specified → list available parameters
+        params = await client.get_device_power_parameters(args.sn)
+        _header(f"Available parameters for {args.sn}")
+        print("  Pass these names as arguments to device-chart:\n")
+        for p in params:
+            print(f"  {p.name:<30s} ({p.unit})")
+        print(
+            f"\n  Example: aionepviewer device-chart {args.sn} "
+            f'Temperature "AC Voltage"'
+        )
+        return params
+
+    chart = await client.get_device_statistics_chart(
+        args.sn,
+        ChartType.DAY,
+        date=args.date,
+        lines=args.lines,
+    )
+
+    _header(f"Device Chart: {args.sn} ({args.date})")
+
+    for series in chart.series:
+        # Find the latest non-None value and its timestamp
+        latest_val = None
+        latest_time = ""
+        for i in range(len(series.data) - 1, -1, -1):
+            if series.data[i] is not None:
+                latest_val = series.data[i]
+                if i < len(chart.x_axis_data):
+                    latest_time = chart.x_axis_data[i]
+                break
+
+        if latest_val is not None:
+            print(f"  {series.name}: {latest_val} (at {latest_time})")
+        else:
+            print(f"  {series.name}: no data")
+
+        if args.show_all:
+            non_null = [
+                (chart.x_axis_data[i], v)
+                for i, v in enumerate(series.data)
+                if v is not None and i < len(chart.x_axis_data)
+            ]
+            if non_null:
+                for t, v in non_null:
+                    print(f"    {t}: {v}")
+            print()
+
+    return chart
+
+
 async def _cmd_device_playback(client: NepViewer, args: argparse.Namespace) -> Any:
     pb = await client.get_device_playback(args.sn, args.date, args.date)
     _header(f"Playback: {args.sn} ({args.date})")
@@ -466,6 +543,7 @@ COMMANDS = {
     "device-detail": _cmd_device_detail,
     "device-stats": _cmd_device_stats,
     "device-params": _cmd_device_params,
+    "device-chart": _cmd_device_chart,
     "device-energy": _cmd_device_energy,
     "device-playback": _cmd_device_playback,
     "product-info": _cmd_product_info,

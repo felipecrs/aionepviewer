@@ -232,6 +232,9 @@ aionepviewer devices                            # List all devices
 aionepviewer device-detail <sid> <sn>           # Full device information
 aionepviewer device-stats  <sn>                 # Production, benefit, energy flow
 aionepviewer device-params <sn>                 # Available power parameters
+aionepviewer device-chart  <sn>                 # List available chart parameters
+aionepviewer device-chart  <sn> Temperature "AC Voltage"  # Latest readings
+aionepviewer device-chart  <sn> Temperature --all         # All data points
 aionepviewer device-energy <sn> 2026-05-20      # Day energy stats
 aionepviewer device-energy <sn> 2026-05                # Month energy stats
 aionepviewer device-playback <sn>               # Today's 5-min playback
