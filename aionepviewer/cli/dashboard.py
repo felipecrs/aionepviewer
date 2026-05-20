@@ -69,7 +69,7 @@ WEATHER_ICONS = {
 
 
 async def _render_status(client: NepViewer) -> Group:
-    """Build the status dashboard renderable."""
+    """Build the global status dashboard renderable."""
     overview, sites, devices = await asyncio.gather(
         client.get_overview(),
         client.get_sites(),
@@ -144,8 +144,8 @@ async def _render_status(client: NepViewer) -> Group:
     return Group(header_panel, "", site_table, "", dev_table, timestamp)
 
 
-async def _render_live(client: NepViewer, sid: str) -> Group:
-    """Build the live site view renderable."""
+async def _render_site(client: NepViewer, sid: str) -> Group:
+    """Build the detailed single-site view renderable."""
     overview, modules_data = await asyncio.gather(
         client.get_site_overview(sid),
         client.get_site_modules(sid),
@@ -186,61 +186,17 @@ async def _render_live(client: NepViewer, sid: str) -> Group:
 
     prod_panel = Panel(prod_table, title="Production", border_style="green")
 
-    # Modules
-    mod_table = Table(title="Panel Modules", show_header=True, header_style="bold")
-    mod_table.add_column("Panel", style="cyan")
-    mod_table.add_column("Addr", justify="center")
-    mod_table.add_column("Power", justify="right")
-    mod_table.add_column("Today", justify="right")
-    mod_table.add_column("Total", justify="right")
-    mod_table.add_column("Status")
+    # Modules grouped by device
+    parts: list[Any] = [Columns([flow_panel, prod_panel], equal=True, expand=True)]
 
-    for dev in modules_data.devices:
-        for m in dev.modules:
-            color = _power_color(m.now)
-            alert = ""
-            if m.status != "0000":
-                alert = f"[red] ⚠ {m.status}[/red]"
-            mod_table.add_row(
-                m.plc_sn,
-                str(m.addr),
-                f"[{color}]{m.now}[/] {m.now_unit}",
-                f"{m.today_power} {m.today_power_unit}",
-                f"{m.total_power} {m.total_power_unit}",
-                f"[green]OK[/green]{alert}" if not alert else alert,
-            )
-
-    # Alert
-    parts: list[Any] = [Columns([flow_panel, prod_panel], equal=True, expand=True), "", mod_table]
-
-    if not overview.alert.is_ok:
-        alert_panel = Panel(
-            f"[bold red]{overview.alert.title}[/bold red]\n{overview.alert.description}",
-            title="⚠ Alert",
-            border_style="red",
-        )
-        parts.append("")
-        parts.append(alert_panel)
-
-    timestamp = Text(f"\n  Last refresh: {datetime.now().strftime('%H:%M:%S')}  |  Updated: {overview.last_update_cal}", style="dim")
-    parts.append(timestamp)
-
-    return Group(*parts)
-
-
-async def _render_modules(client: NepViewer, sid: str) -> Group:
-    """Build the modules view renderable."""
-    modules_data = await client.get_site_modules(sid)
-
-    parts: list[Any] = []
     for dev in modules_data.devices:
         status = _status_dot(dev.status == 0)
         table = Table(
-            title=f"{status} Device {dev.sn} ({dev.model_name})",
+            title=f"{status} {dev.sn} ({dev.model_name})",
             show_header=True,
             header_style="bold",
         )
-        table.add_column("Panel SN", style="cyan")
+        table.add_column("Panel", style="cyan")
         table.add_column("Addr", justify="center")
         table.add_column("Power", justify="right")
         table.add_column("Today", justify="right")
@@ -264,10 +220,20 @@ async def _render_modules(client: NepViewer, sid: str) -> Group:
         if dev.alert_code and dev.alert_code != "0000":
             table.caption = f"[red]Alert: {dev.alert_title}[/red]"
 
-        parts.append(table)
         parts.append("")
+        parts.append(table)
 
-    timestamp = Text(f"  Last refresh: {datetime.now().strftime('%H:%M:%S')}", style="dim")
+    # Site-level alert
+    if not overview.alert.is_ok:
+        alert_panel = Panel(
+            f"[bold red]{overview.alert.title}[/bold red]\n{overview.alert.description}",
+            title="⚠ Alert",
+            border_style="red",
+        )
+        parts.append("")
+        parts.append(alert_panel)
+
+    timestamp = Text(f"\n  Last refresh: {datetime.now().strftime('%H:%M:%S')}  |  Updated: {overview.last_update_cal}", style="dim")
     parts.append(timestamp)
 
     return Group(*parts)
@@ -331,14 +297,9 @@ async def _cmd_status(client: NepViewer, args: argparse.Namespace) -> None:
     await _display(lambda: _render_status(client), watch=args.watch)
 
 
-async def _cmd_live(client: NepViewer, args: argparse.Namespace) -> None:
+async def _cmd_site(client: NepViewer, args: argparse.Namespace) -> None:
     sid = await resolve_sid(client, args.sid)
-    await _display(lambda: _render_live(client, sid), watch=args.watch)
-
-
-async def _cmd_modules(client: NepViewer, args: argparse.Namespace) -> None:
-    sid = await resolve_sid(client, args.sid)
-    await _display(lambda: _render_modules(client, sid), watch=args.watch)
+    await _display(lambda: _render_site(client, sid), watch=args.watch)
 
 
 async def _cmd_weather(client: NepViewer, args: argparse.Namespace) -> None:
@@ -352,31 +313,22 @@ async def _cmd_weather(client: NepViewer, args: argparse.Namespace) -> None:
 def register_dashboard_commands(parent_sub: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
     """Register human-friendly dashboard commands."""
 
-    # status
+    # status — global overview
     p = parent_sub.add_parser(
         "status",
-        help="Dashboard: overview of all sites and devices",
+        help="Overview of all sites and devices",
     )
     p.add_argument("--watch", "-w", action="store_true", help="Auto-refresh every 5 minutes")
     p.set_defaults(func=_cmd_status)
 
-    # live
+    # site — detailed single-site view
     p = parent_sub.add_parser(
-        "live",
-        help="Live site view: energy flow, production, modules",
+        "site",
+        help="Detailed site view: energy flow, production, panels",
     )
     p.add_argument("sid", nargs="?", default=None, help="Site ID (auto-detected if omitted)")
     p.add_argument("--watch", "-w", action="store_true", help="Auto-refresh every 5 minutes")
-    p.set_defaults(func=_cmd_live)
-
-    # modules
-    p = parent_sub.add_parser(
-        "modules",
-        help="Per-panel module status with color-coded power",
-    )
-    p.add_argument("sid", nargs="?", default=None, help="Site ID (auto-detected if omitted)")
-    p.add_argument("--watch", "-w", action="store_true", help="Auto-refresh every 5 minutes")
-    p.set_defaults(func=_cmd_modules)
+    p.set_defaults(func=_cmd_site)
 
     # weather
     p = parent_sub.add_parser(
