@@ -14,10 +14,14 @@ from aionepviewer.const import API_BASE_PATH, DEFAULT_HOST
 from aionepviewer.exceptions import NepApiError, NepAuthError
 
 from .conftest import (
+    ACCOUNT_INFO_RESPONSE,
     DEVICE_LIST_RESPONSE,
     DEVICE_WIFI_OTA_RESPONSE,
+    LOGOUT_RESPONSE,
     MODULES_RESPONSE,
     PRODUCT_INFO_RESPONSE,
+    REPORT_SETTINGS_RESPONSE,
+    REPORT_SETUP_RESPONSE,
     SIGN_IN_RESPONSE,
     SITE_LAYOUT_RESPONSE,
     SITE_LIST_RESPONSE,
@@ -186,6 +190,87 @@ async def test_get_site_layout() -> None:
 
         assert layout.sid == "BR_20260317_tXFI"
         assert layout.site_name == "Test Site"
+
+
+@pytest.mark.asyncio
+async def test_get_account_info() -> None:
+    with aioresponses() as m:
+        _mock_sign_in(m)
+        m.post(f"{BASE}/account/info", payload=ACCOUNT_INFO_RESPONSE)
+
+        async with ClientSession() as session:
+            client = NepViewer(session, "test@example.com", "password")
+            info = await client.get_account_info()
+
+        assert info.uid == "20260317190316_sQux"
+        assert info.email == "test@example.com"
+        assert info.country_code == "BR"
+        assert info.contact_person == "Test User"
+        assert info.group_name == "End User - Layout"
+
+
+@pytest.mark.asyncio
+async def test_logout() -> None:
+    with aioresponses() as m:
+        _mock_sign_in(m)
+        m.post(f"{BASE}/account/loginOut", payload=LOGOUT_RESPONSE)
+
+        async with ClientSession() as session:
+            client = NepViewer(session, "test@example.com", "password")
+            await client.authenticate()
+            assert client._auth.token is not None
+            await client.logout()
+            assert client._auth.token is None
+
+
+@pytest.mark.asyncio
+async def test_get_report_settings() -> None:
+    with aioresponses() as m:
+        _mock_sign_in(m)
+        m.post(f"{BASE}/site/sn/report/settings", payload=REPORT_SETTINGS_RESPONSE)
+
+        async with ClientSession() as session:
+            client = NepViewer(session, "test@example.com", "password")
+            settings = await client.get_report_settings("BR_TEST", "86D4EC90")
+
+        assert settings.sn == "86D4EC90"
+        assert settings.daily is True
+        assert settings.weekly is False
+        assert settings.monthly is True
+        assert settings.alert_start == "8"
+        assert settings.alert_end == "17"
+
+
+@pytest.mark.asyncio
+async def test_set_report_settings() -> None:
+    with aioresponses() as m:
+        _mock_sign_in(m)
+        m.post(f"{BASE}/site/sn/report/setUp", payload=REPORT_SETUP_RESPONSE)
+
+        async with ClientSession() as session:
+            client = NepViewer(session, "test@example.com", "password")
+            # Should not raise
+            await client.set_report_settings(
+                "86D4EC90",
+                daily=True,
+                weekly=True,
+                monthly=True,
+                alert_start="9",
+                alert_end="18",
+            )
+
+
+@pytest.mark.asyncio
+async def test_http_401_raises_auth_error() -> None:
+    """HTTP-level 401 (empty body, e.g. session invalidated) raises NepAuthError."""
+    with aioresponses() as m:
+        _mock_sign_in(m)
+        m.post(f"{BASE}/device/list", status=401, body="")
+
+        async with ClientSession() as session:
+            client = NepViewer(session, "test@example.com", "password")
+            with pytest.raises(NepAuthError, match="HTTP 401"):
+                await client.get_devices()
 
 
 def test_sign_header_computed() -> None:

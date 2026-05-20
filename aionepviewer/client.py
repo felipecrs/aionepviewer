@@ -9,6 +9,7 @@ import aiohttp
 from .auth import NepAuth
 from .const import DEFAULT_HOST
 from .models import (
+    AccountInfo,
     AuthData,
     ChartData,
     ChartType,
@@ -23,6 +24,7 @@ from .models import (
     PlaybackType,
     PowerParameter,
     ProductInfo,
+    ReportSettings,
     Site,
     SiteDetail,
     SiteLayout,
@@ -86,6 +88,23 @@ class NepViewer:
         Subsequent calls re-authenticate (useful for token refresh).
         """
         return await self._auth.sign_in()
+
+    async def logout(self) -> None:
+        """Explicitly log out and invalidate the current session token.
+
+        After calling this, the token is cleared and any subsequent API
+        calls will trigger a re-authentication.
+        """
+        await self._auth.request("POST", "/account/loginOut")
+        self._auth._token_info = None
+
+    async def get_account_info(self) -> AccountInfo:
+        """Get detailed profile information for the current user.
+
+        Returns contact details, location, group membership, and OEM info.
+        """
+        data = await self._auth.request("POST", "/account/info")
+        return AccountInfo.from_dict(data)
 
     # ------------------------------------------------------------------
     # Global Overview
@@ -512,4 +531,66 @@ class NepViewer:
         payload = [{"sn": sn, "wifiVersion": ver} for sn, ver in devices]
         await self._auth.request(
             "POST", "/device/updateWifiVersion", json_body={"wifiSn": payload}
+        )
+
+    # ------------------------------------------------------------------
+    # Report Settings
+    # ------------------------------------------------------------------
+
+    async def get_report_settings(self, sid: str, sn: str) -> ReportSettings:
+        """Get the email report notification settings for a device.
+
+        Parameters
+        ----------
+        sid:
+            Site ID.
+        sn:
+            Device serial number.
+        """
+        data = await self._auth.request(
+            "POST",
+            "/site/sn/report/settings",
+            json_body={"sid": sid, "sn": sn},
+        )
+        return ReportSettings.from_dict(data)
+
+    async def set_report_settings(
+        self,
+        sn: str,
+        *,
+        daily: bool = False,
+        weekly: bool = False,
+        monthly: bool = False,
+        alert_start: str = "8",
+        alert_end: str = "17",
+    ) -> None:
+        """Configure the email report notification settings for a device.
+
+        Parameters
+        ----------
+        sn:
+            Device serial number.
+        daily:
+            Enable daily production report email.
+        weekly:
+            Enable weekly production report email.
+        monthly:
+            Enable monthly production report email.
+        alert_start:
+            Alert monitoring window start hour (24h format string, e.g. ``"8"``).
+        alert_end:
+            Alert monitoring window end hour (24h format string, e.g. ``"17"``).
+        """
+        await self._auth.request(
+            "POST",
+            "/site/sn/report/setUp",
+            json_body={
+                "sn": sn,
+                "optionsDaily": daily,
+                "optionsWeekly": weekly,
+                "optionsMonthly": monthly,
+                "from": [alert_start, alert_end],
+                "alertStart": alert_start,
+                "alertEnd": alert_end,
+            },
         )

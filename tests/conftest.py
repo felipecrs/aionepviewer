@@ -342,3 +342,60 @@ SITE_LAYOUT_RESPONSE = {
         "layoutScale": 0,
     },
 }
+
+ACCOUNT_INFO_RESPONSE = {
+    "code": 200,
+    "msg": "Success",
+    "data": {
+        "uid": "20260317190316_sQux",
+        "email": "test@example.com",
+        "userType": 6,
+        "countryName": "Brazil",
+        "stateName": "Minas Gerais",
+        "countryCode": "BR",
+        "StateCode": "Minas Gerais",
+        "city": "Test City",
+        "street": "",
+        "contactPerson": "Test User",
+        "contactNumber": "",
+        "headerImg": "",
+        "fullHeaderImg": "",
+        "is_auth": False,
+        "groupId": 26,
+        "groupName": "End User - Layout",
+        "parent_id": "",
+        "parent_email": "",
+        "company_id": 0,
+        "oemid": 0,
+        "oemweb": "NEP",
+        "isCompanyOwner": 0,
+        "isBlack": 0,
+    },
+}
+
+REPORT_SETTINGS_RESPONSE = {
+    "code": 200,
+    "msg": "Success",
+    "data": {
+        "sn": "86D4EC90",
+        "optionsDaily": True,
+        "optionsWeekly": False,
+        "optionsMonthly": True,
+        "alertHourly": False,
+        "alertTime": False,
+        "alertStart": "8",
+        "alertEnd": "17",
+    },
+}
+
+REPORT_SETUP_RESPONSE = {
+    "code": 200,
+    "msg": "Success",
+    "data": {},
+}
+
+LOGOUT_RESPONSE = {
+    "code": 200,
+    "msg": "Success",
+    "data": {},
+}

@@ -4,16 +4,27 @@ Async Python library for the [NEP solar inverter](https://www.nepviewer.com/) cl
 
 Designed as a backend library for [Home Assistant](https://www.home-assistant.io/) integrations, following the [HA API library best practices](https://developers.home-assistant.io/docs/api_lib_index/).
 
+## Important: Single-Session Limitation
+
+The NEP API only allows **one active session per account** at a time. If you log in from a second device or client, the first session's token is immediately invalidated and all its requests will fail with a 401 error.
+
+This means:
+- You **cannot** use the same NEP account simultaneously from the web portal and this library (or from two library instances).
+- If your Home Assistant integration suddenly starts getting authentication errors, check if someone opened the NEP web portal or mobile app with the same account.
+- The library handles this gracefully by raising `NepAuthError` and clearing the token, so the next request will trigger a re-authentication.
+
 ## Features
 
 - **Fully async** — built on `aiohttp`, accepts an externally managed `ClientSession`
-- **Complete API coverage** — authentication, sites, devices, modules, statistics, playback, weather
+- **Complete API coverage** — authentication, sites, devices, modules, statistics, playback, weather, reports
 - **Module-level monitoring** — individual microinverter panel data (per-PLC serial number)
 - **Energy flow** — PV panel, home, grid, battery, and generator power flow data
 - **Production statistics** — today, yesterday, month, year, and lifetime energy with currency values
 - **Environmental benefit** — CO₂ saved, trees equivalent, car km avoided, light hours, oil barrels
 - **Charts & playback** — intraday (5-min), daily, monthly, yearly chart data
 - **Weather** — 7-day forecast for each site
+- **Report settings** — read and configure email notification reports (daily/weekly/monthly)
+- **Account management** — user profile info and explicit logout
 - **Automatic token management** — JWT sign-in with auto-refresh on expiry
 - **Request signing** — MD5-based `sign` header computed automatically
 - **Type-annotated** — full type hints with `from __future__ import annotations`
@@ -120,11 +131,13 @@ async def async_setup_entry(hass, entry):
 
 Main client class.
 
-#### Authentication
+#### Authentication & Account
 
 | Method | Description |
 |---|---|
 | `authenticate()` | Sign in and return `AuthData` (user info + token) |
+| `logout()` | Explicitly log out and invalidate the session token |
+| `get_account_info()` | Get detailed user profile (`AccountInfo`) |
 
 #### Global Overview
 
@@ -155,6 +168,13 @@ Main client class.
 | `get_device_statistics_chart(sn, chart_type, ...)` | Chart data |
 | `get_device_date_statistics(sn, stat_type, date)` | Power/consumption/economic for a period |
 | `get_device_playback(sn, start, end)` | 5-min interval data with per-module breakdown |
+
+#### Report Settings
+
+| Method | Description |
+|---|---|
+| `get_report_settings(sid, sn)` | Get email report notification settings for a device |
+| `set_report_settings(sn, ...)` | Configure daily/weekly/monthly email reports and alert windows |
 
 ### Chart Types
 

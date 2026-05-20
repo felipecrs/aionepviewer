@@ -138,6 +138,15 @@ class NepAuth:
         except TimeoutError as err:
             raise NepTimeoutError(f"Request timed out: {err}") from err
 
+        # Handle HTTP-level 401/403 (e.g. session invalidated by another
+        # device logging in with the same account — the server returns
+        # HTTP 401 with an empty body).
+        if resp.status in (401, 403):
+            self._token_info = None
+            raise NepAuthError(
+                f"Authentication failed (HTTP {resp.status})"
+            )
+
         try:
             result = await resp.json(content_type=None)
         except Exception as err:
