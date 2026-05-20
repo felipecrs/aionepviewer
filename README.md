@@ -176,6 +176,54 @@ Main client class.
 | `NepTimeoutError` | Request timed out |
 | `NepApiError` | API returned a non-200 code (has `.code` and `.message`) |
 
+## CLI
+
+The package includes a command-line tool for quick interaction with the API.
+
+### Authentication
+
+Credentials can be provided via flags, environment variables, or interactive prompt:
+
+```bash
+# Flags
+aionep -e user@example.com -p secret sites
+
+# Environment variables
+export AIONEP_EMAIL=user@example.com
+export AIONEP_PASSWORD=secret
+aionep sites
+
+# Interactive prompt (if not provided)
+aionep sites
+```
+
+### Commands
+
+```bash
+aionep login                              # Verify credentials
+aionep overview                           # Global production & benefit summary
+aionep sites                              # List all sites with device summaries
+aionep site-detail  <sid>                 # Full site information
+aionep site-overview <sid>                # Production, energy flow, alerts
+aionep site-modules  <sid>                # Per-panel microinverter data
+aionep site-weather  <sid>                # 7-day forecast
+
+aionep devices                            # List all devices
+aionep device-detail <sid> <sn>           # Full device information
+aionep device-stats  <sn>                 # Production, benefit, energy flow
+aionep device-params <sn>                 # Available power parameters
+aionep device-energy <sn> 2026-05-20      # Day energy stats
+aionep device-energy <sn> 2026-05                # Month energy stats
+aionep device-playback <sn>               # Today's 5-min playback
+aionep device-playback <sn> --date 2026-05-20    # Specific date
+```
+
+Add `--json` / `-j` to any command for machine-readable JSON output:
+
+```bash
+aionep -j site-overview BR_20260317_tXFI
+```
+
 ## Development
 
 ```bash
