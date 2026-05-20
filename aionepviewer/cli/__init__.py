@@ -81,6 +81,9 @@ def get_host(args: argparse.Namespace) -> str:
     # If the user explicitly passed --host, use it (argparse default is DEFAULT_HOST)
     if args.host != DEFAULT_HOST:
         return args.host
+    env_host = os.environ.get("AIONEPVIEWER_HOST", "")
+    if env_host:
+        return env_host
     cfg = load_config()
     return cfg.get("host", DEFAULT_HOST)
 
