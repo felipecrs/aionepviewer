@@ -41,6 +41,12 @@ Or with [uv](https://docs.astral.sh/uv/):
 uv add aionepviewer
 ```
 
+To also install the CLI tool:
+
+```bash
+pip install aionepviewer[cli]
+```
+
 ## Quick Start
 
 ```python
