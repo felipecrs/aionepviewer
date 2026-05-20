@@ -212,7 +212,7 @@ The package includes a command-line tool with three categories of commands:
 
 ### Configuration
 
-Run `configure` once to save your credentials to the platform-appropriate config file:
+Run `configure` once to save your credentials. It will prompt for host, email, and password, verify the credentials against the API, and then save:
 
 ```bash
 aionepviewer configure
