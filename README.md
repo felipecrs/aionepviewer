@@ -198,7 +198,11 @@ Main client class.
 
 ## CLI
 
-The package includes a command-line tool for quick interaction with the API.
+The package includes a command-line tool with three categories of commands:
+
+1. **`api`** — Raw API commands that always output JSON (1:1 mapping to API endpoints)
+2. **`chart`** — Terminal bar charts for humans (powered by termgraph)
+3. **Dashboard commands** — Rich, colorful human-friendly views with `--watch` support
 
 ### Authentication
 
@@ -206,45 +210,87 @@ Credentials can be provided via flags, environment variables, or interactive pro
 
 ```bash
 # Flags
-aionepviewer -e user@example.com -p secret sites
+aionepviewer -e user@example.com -p secret status
 
 # Environment variables
 export AIONEPVIEWER_EMAIL=user@example.com
 export AIONEPVIEWER_PASSWORD=secret
-aionepviewer sites
+aionepviewer status
 
 # Interactive prompt (if not provided)
-aionepviewer sites
+aionepviewer status
 ```
 
-### Commands
+### Dashboard Commands (Human-Friendly)
 
 ```bash
-aionepviewer login                              # Verify credentials
-aionepviewer overview                           # Global production & benefit summary
-aionepviewer sites                              # List all sites with device summaries
-aionepviewer site-detail  <sid>                 # Full site information
-aionepviewer site-overview <sid>                # Production, energy flow, alerts
-aionepviewer site-modules  <sid>                # Per-panel microinverter data
-aionepviewer site-weather  <sid>                # 7-day forecast
+aionepviewer status                    # Overview dashboard: sites, devices, production
+aionepviewer status --watch            # Auto-refresh every 5 minutes
 
-aionepviewer devices                            # List all devices
-aionepviewer device-detail <sid> <sn>           # Full device information
-aionepviewer device-stats  <sn>                 # Production, benefit, energy flow
-aionepviewer device-params <sn>                 # Available power parameters
-aionepviewer device-chart  <sn>                 # List available chart parameters
-aionepviewer device-chart  <sn> Temperature "AC Voltage"  # Latest readings
-aionepviewer device-chart  <sn> Temperature --all         # All data points
-aionepviewer device-energy <sn> 2026-05-20      # Day energy stats
-aionepviewer device-energy <sn> 2026-05                # Month energy stats
-aionepviewer device-playback <sn>               # Today's 5-min playback
-aionepviewer device-playback <sn> --date 2026-05-20    # Specific date
+aionepviewer live [sid]                # Live site view: energy flow, modules, alerts
+aionepviewer live --watch              # Auto-refresh every 5 minutes
+
+aionepviewer modules [sid]             # Per-panel module status with color-coded power
+aionepviewer modules --watch           # Auto-refresh every 5 minutes
+
+aionepviewer weather [sid]             # 7-day weather forecast with icons
 ```
 
-Add `--json` / `-j` to any command for machine-readable JSON output:
+Site ID is auto-detected if omitted (uses the first site on your account).
+
+### Chart Commands (Terminal Graphs)
 
 ```bash
-aionepviewer -j site-overview BR_20260317_tXFI
+# Device production charts
+aionepviewer chart production                          # Today's intraday power (W)
+aionepviewer chart production --sn AABB1122            # Specific device
+aionepviewer chart production --period month           # Daily bars for current month (kWh)
+aionepviewer chart production --period year             # Monthly bars for current year
+aionepviewer chart production --date 2026-05-20        # Specific date
+
+# Parameter charts (Temperature, AC Voltage, etc.)
+aionepviewer chart params                              # List available parameters
+aionepviewer chart params Temperature "AC Voltage"     # Intraday parameter chart
+aionepviewer chart params --sn AABB1122 Temperature    # Specific device
+
+# Site production charts
+aionepviewer chart site                                # Today's site production
+aionepviewer chart site --period month                 # Daily bars for current month
+```
+
+Device SN and Site ID are auto-detected if omitted.
+
+### API Commands (JSON Output)
+
+All API commands output raw JSON. Use these for scripting or piping to `jq`.
+
+```bash
+aionepviewer api login                                 # Authenticate, return token info
+aionepviewer api logout                                # Invalidate session token
+aionepviewer api account-info                          # User profile details
+aionepviewer api overview                              # Global production summary
+aionepviewer api site-status-counts                    # Online/offline site counts
+
+aionepviewer api sites                                 # List all sites
+aionepviewer api site-detail <sid>                     # Full site information
+aionepviewer api site-overview <sid>                   # Production, energy flow, alerts
+aionepviewer api site-modules <sid>                    # Per-panel module data
+aionepviewer api site-weather <sid>                    # 7-day forecast
+aionepviewer api site-layout <sid>                     # Site layout picture info
+aionepviewer api site-chart <sid> --type 1             # Site chart data
+
+aionepviewer api devices                               # List all devices
+aionepviewer api device-detail <sid> <sn>              # Full device information
+aionepviewer api device-stats <sn>                     # Device statistics overview
+aionepviewer api device-params <sn>                    # Available power parameters
+aionepviewer api device-chart <sn> --type 1            # Device chart data
+aionepviewer api device-energy <sn> 2026-05-20         # Day energy stats
+aionepviewer api device-energy <sn> 2026-05            # Month energy stats
+aionepviewer api device-playback <sn>                  # Today's 5-min playback
+aionepviewer api product-info <sn...>                  # Product model info
+aionepviewer api device-wifi-ota <sn...>               # WiFi OTA status
+aionepviewer api report-settings <sid> <sn>            # Report notification settings
+aionepviewer api report-setup <sn> --daily --monthly   # Configure reports
 ```
 
 ## Development
