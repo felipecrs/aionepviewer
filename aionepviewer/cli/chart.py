@@ -27,11 +27,15 @@ def _render_bar_chart(
     color: str = "yellow",
 ) -> None:
     """Render a horizontal bar chart with termgraph."""
+    from termgraph.constants import AVAILABLE_COLORS  # type: ignore[import-untyped]
     from termgraph.module import Data, Args, BarChart  # type: ignore[import-untyped]
 
     if not values or all(v == 0 for v in values):
         console.print("[dim]  No data to chart.[/dim]")
         return
+
+    # termgraph expects ANSI color codes (ints), not color names
+    ansi_color = AVAILABLE_COLORS.get(color, AVAILABLE_COLORS["yellow"])
 
     data = Data([[v] for v in values], labels)
     chart = BarChart(
@@ -41,7 +45,7 @@ def _render_bar_chart(
             width=50,
             format="{:.1f}",
             suffix=suffix,
-            colors=[color],
+            colors=[ansi_color],
             no_labels=False,
             no_values=False,
         ),

@@ -54,38 +54,42 @@ def save_config(cfg: dict[str, Any]) -> Path:
 # Precedence: CLI flags > env vars > config file > interactive prompt
 
 
-def get_credentials(args: argparse.Namespace) -> tuple[str, str]:
-    """Resolve email/password using the full precedence chain."""
+def _resolve_credentials(args: argparse.Namespace) -> tuple[str, str, str]:
+    """Resolve host, email, and password using the full precedence chain.
+
+    Returns ``(host, email, password)``.  Falls back to interactive prompts
+    for any value that cannot be determined from flags / env / config.
+    """
     cfg = load_config()
+
+    # Host: CLI flag (non-default) > env > config > default
+    if args.host != DEFAULT_HOST:
+        host = str(args.host)
+    else:
+        host = (
+            os.environ.get("AIONEPVIEWER_HOST", "")
+            or str(cfg.get("host", ""))
+            or DEFAULT_HOST
+        )
 
     email = (
         args.email
         or os.environ.get("AIONEPVIEWER_EMAIL", "")
-        or cfg.get("email", "")
+        or str(cfg.get("email", ""))
     )
     password = (
         args.password
         or os.environ.get("AIONEPVIEWER_PASSWORD", "")
-        or cfg.get("password", "")
+        or str(cfg.get("password", ""))
     )
 
+    if not host:
+        host = input(f"API host [{DEFAULT_HOST}]: ").strip() or DEFAULT_HOST
     if not email:
-        email = input("Email: ")
+        email = input("Email: ").strip()
     if not password:
         password = getpass("Password: ")
-    return email, password
-
-
-def get_host(args: argparse.Namespace) -> str:
-    """Resolve API host using the precedence chain."""
-    # If the user explicitly passed --host, use it (argparse default is DEFAULT_HOST)
-    if args.host != DEFAULT_HOST:
-        return str(args.host)
-    env_host = os.environ.get("AIONEPVIEWER_HOST", "")
-    if env_host:
-        return env_host
-    cfg = load_config()
-    return str(cfg.get("host", DEFAULT_HOST))
+    return host, email, password
 
 
 def dump_json(obj: Any) -> str:
@@ -171,8 +175,8 @@ def _build_parser() -> argparse.ArgumentParser:
 # ── configure commands ─────────────────────────────────────────────────
 
 
-async def _cmd_configure(_client: Any, args: argparse.Namespace) -> None:
-    """Interactive config setup."""
+async def _cmd_configure(_client: Any, _args: argparse.Namespace) -> None:
+    """Interactive config setup with credential verification."""
     from rich.console import Console
 
     console = Console()
@@ -181,24 +185,37 @@ async def _cmd_configure(_client: Any, args: argparse.Namespace) -> None:
     console.print("\n[bold]NEP Viewer CLI Configuration[/bold]\n")
     console.print(f"  Config file: [cyan]{config_path()}[/cyan]\n")
 
-    current_email = cfg.get("email", "")
-    current_host = cfg.get("host", DEFAULT_HOST)
+    current_host = str(cfg.get("host", DEFAULT_HOST))
+    current_email = str(cfg.get("email", ""))
+
+    host = input(f"API host [{current_host}]: ").strip() or current_host
 
     prompt_email = f"Email [{current_email}]: " if current_email else "Email: "
     email = input(prompt_email).strip() or current_email
 
     password = getpass("Password (input hidden): ")
     if not password and cfg.get("password"):
-        password = cfg["password"]
+        password = str(cfg["password"])
         console.print("  [dim](kept existing password)[/dim]")
 
-    prompt_host = f"API host [{current_host}]: "
-    host = input(prompt_host).strip() or current_host
+    if not email or not password:
+        console.print("\n  [red]Email and password are required.[/red]\n")
+        sys.exit(1)
 
-    cfg["email"] = email
-    if password:
-        cfg["password"] = password
+    # Verify credentials before saving
+    console.print("\n  Verifying credentials...", end="")
+    async with aiohttp.ClientSession() as session:
+        client = NepViewer(session, email, password, host)
+        try:
+            auth = await client.authenticate()
+        except NepError as exc:
+            console.print(f" [red]FAILED[/red]\n  {exc}\n")
+            sys.exit(1)
+    console.print(f" [green]OK[/green] (logged in as {auth.user_info.email})")
+
     cfg["host"] = host
+    cfg["email"] = email
+    cfg["password"] = password
 
     path = save_config(cfg)
     console.print(f"\n  [green]Configuration saved to {path}[/green]\n")
@@ -223,12 +240,10 @@ async def _async_main(args: argparse.Namespace) -> None:
         await args.func(None, args)
         return
 
-    email, password = get_credentials(args)
-    host = get_host(args)
+    host, email, password = _resolve_credentials(args)
     async with aiohttp.ClientSession() as session:
         client = NepViewer(session, email, password, host)
-        handler = args.func
-        await handler(client, args)
+        await args.func(client, args)
 
 
 def main() -> None:
