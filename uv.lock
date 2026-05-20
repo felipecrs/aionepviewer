@@ -106,8 +106,10 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
+    { name = "platformdirs" },
     { name = "rich" },
     { name = "termgraph" },
+    { name = "tomli-w" },
 ]
 
 [package.dev-dependencies]
@@ -121,8 +123,10 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.9.0" },
+    { name = "platformdirs", specifier = ">=4.0" },
     { name = "rich", specifier = ">=13.0" },
     { name = "termgraph", specifier = ">=0.5.0" },
+    { name = "tomli-w", specifier = ">=1.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -576,6 +580,15 @@ wheels = [
 ]
 
 [[package]]
+name = "platformdirs"
+version = "4.9.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/9f/4a/0883b8e3802965322523f0b200ecf33d31f10991d0401162f4b23c698b42/platformdirs-4.9.6.tar.gz", hash = "sha256:3bfa75b0ad0db84096ae777218481852c0ebc6c727b3168c1b9e0118e458cf0a", size = 29400, upload-time = "2026-04-09T00:04:10.812Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/75/a6/a0a304dc33b49145b21f4808d763822111e67d1c3a32b524a1baf947b6e1/platformdirs-4.9.6-py3-none-any.whl", hash = "sha256:e61adb1d5e5cb3441b4b7710bea7e4c12250ca49439228cc1021c00dcfac0917", size = 21348, upload-time = "2026-04-09T00:04:09.463Z" },
+]
+
+[[package]]
 name = "pluggy"
 version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -739,6 +752,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/38/d6/43a42797431d299a4b09b3b9fcdbcdea9a762231f6037c5660a9125e33f0/termgraph-0.7.6.tar.gz", hash = "sha256:0a86f6033cec461785ca4ffae19b394c788820fa9beab17f9d2eb83068e1fe60", size = 463933, upload-time = "2026-03-25T05:19:25.831Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/34/02/7d15699fc4d431443e6f1217c22a130b129a866a5f88164fedfab7fe39f2/termgraph-0.7.6-py3-none-any.whl", hash = "sha256:c9dc8b10189462b511ba076c484cf6e3c389e7c2d40f170f09489dd101148398", size = 18627, upload-time = "2026-03-25T05:19:24.682Z" },
+]
+
+[[package]]
+name = "tomli-w"
+version = "1.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/19/75/241269d1da26b624c0d5e110e8149093c759b7a286138f4efd61a60e75fe/tomli_w-1.2.0.tar.gz", hash = "sha256:2dd14fac5a47c27be9cd4c976af5a12d87fb1f0b4512f81d69cce3b35ae25021", size = 7184, upload-time = "2025-01-15T12:07:24.262Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c7/18/c86eb8e0202e32dd3df50d43d7ff9854f8e0603945ff398974c1d91ac1ef/tomli_w-1.2.0-py3-none-any.whl", hash = "sha256:188306098d013b691fcadc011abd66727d3c414c571bb01b1a174ba8c983cf90", size = 6675, upload-time = "2025-01-15T12:07:22.074Z" },
 ]
 
 [[package]]

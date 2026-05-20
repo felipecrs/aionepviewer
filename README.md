@@ -204,20 +204,51 @@ The package includes a command-line tool with three categories of commands:
 2. **`chart`** — Terminal bar charts for humans (powered by termgraph)
 3. **Dashboard commands** — Rich, colorful human-friendly views with `--watch` support
 
-### Authentication
+### Configuration
 
-Credentials can be provided via flags, environment variables, or interactive prompt:
+Run `configure` once to save your credentials to the platform-appropriate config file:
 
 ```bash
-# Flags
-aionepviewer -e user@example.com -p secret status
+aionepviewer configure
+```
 
-# Environment variables
-export AIONEPVIEWER_EMAIL=user@example.com
-export AIONEPVIEWER_PASSWORD=secret
+This creates a TOML config file at the standard user config location:
+
+| OS | Path |
+|---|---|
+| Linux | `~/.config/aionepviewer/config.toml` |
+| macOS | `~/Library/Application Support/aionepviewer/config.toml` |
+| Windows | `%APPDATA%\aionepviewer\config.toml` (Roaming) |
+
+You can also check the path with `aionepviewer config-path`.
+
+The config file format:
+
+```toml
+email = "user@example.com"
+password = "secret"
+host = "https://api.nepviewer.net"   # optional, only if non-default
+```
+
+### Authentication Precedence
+
+Credentials are resolved in this order (first non-empty value wins):
+
+1. CLI flags: `--email` / `--password` / `--host`
+2. Environment variables: `AIONEPVIEWER_EMAIL` / `AIONEPVIEWER_PASSWORD`
+3. Config file (see above)
+4. Interactive prompt (fallback for email and password)
+
+```bash
+# Uses config file (after running 'configure')
 aionepviewer status
 
-# Interactive prompt (if not provided)
+# Override email from config with a flag
+aionepviewer -e other@example.com status
+
+# Override with environment variables
+export AIONEPVIEWER_EMAIL=user@example.com
+export AIONEPVIEWER_PASSWORD=secret
 aionepviewer status
 ```
 
