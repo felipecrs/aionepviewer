@@ -186,7 +186,7 @@ def register_api_commands(parent_sub: argparse._SubParsersAction) -> None:  # ty
     p.add_argument("sid", help="Site ID")
     p.add_argument("--type", type=int, required=True, help="ChartType (1=day, 3=daily, 5=monthly, 6=yearly, 11=intraday)")
     p.add_argument("--date", default=date.today().isoformat(), help="Date (YYYY-MM-DD)")
-    p.add_argument("--range-date", default=None, help="Date range (YYYY-MM-DD~YYYY-MM-DD)")
+    p.add_argument("--range-date", default="", help="Date range (YYYY-MM-DD~YYYY-MM-DD)")
     p.set_defaults(func=_site_chart)
 
     # devices

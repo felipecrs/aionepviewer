@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import sys
+from collections.abc import Awaitable, Callable
 from datetime import datetime
 from typing import Any
 
@@ -24,12 +24,6 @@ WATCH_INTERVAL = 300  # 5 minutes
 
 
 # ── formatting helpers ─────────────────────────────────────────────────
-
-
-def _status_badge(is_online: bool) -> Text:
-    if is_online:
-        return Text(" ONLINE ", style="bold white on green")
-    return Text(" OFFLINE ", style="bold white on red")
 
 
 def _status_dot(is_online: bool) -> str:
@@ -228,7 +222,6 @@ async def _render_live(client: NepViewer, sid: str) -> Group:
         parts.append("")
         parts.append(alert_panel)
 
-    status = _status_badge(overview.is_online)
     timestamp = Text(f"\n  Last refresh: {datetime.now().strftime('%H:%M:%S')}  |  Updated: {overview.last_update_cal}", style="dim")
     parts.append(timestamp)
 
@@ -310,66 +303,47 @@ async def _render_weather(client: NepViewer, sid: str) -> Group:
     return Group("", table, "")
 
 
+# ── display / watch helper ─────────────────────────────────────────────
+
+
+async def _display(
+    render: Callable[[], Awaitable[Group]],
+    *,
+    watch: bool = False,
+) -> None:
+    """Print a renderable once, or auto-refresh it in a Live context."""
+    if watch:
+        with Live(console=console, refresh_per_second=0.5) as live:
+            while True:
+                try:
+                    live.update(await render())
+                    await asyncio.sleep(WATCH_INTERVAL)
+                except KeyboardInterrupt:
+                    break
+    else:
+        console.print(await render())
+
+
 # ── command handlers ───────────────────────────────────────────────────
 
 
 async def _cmd_status(client: NepViewer, args: argparse.Namespace) -> None:
-    """Quick dashboard: overview + sites + devices."""
-    if args.watch:
-        with Live(console=console, refresh_per_second=0.5) as live:
-            while True:
-                try:
-                    content = await _render_status(client)
-                    live.update(content)
-                    await asyncio.sleep(WATCH_INTERVAL)
-                except KeyboardInterrupt:
-                    break
-    else:
-        content = await _render_status(client)
-        console.print(content)
+    await _display(lambda: _render_status(client), watch=args.watch)
 
 
 async def _cmd_live(client: NepViewer, args: argparse.Namespace) -> None:
-    """Live site view: energy flow + modules."""
     sid = await resolve_sid(client, args.sid)
-
-    if args.watch:
-        with Live(console=console, refresh_per_second=0.5) as live:
-            while True:
-                try:
-                    content = await _render_live(client, sid)
-                    live.update(content)
-                    await asyncio.sleep(WATCH_INTERVAL)
-                except KeyboardInterrupt:
-                    break
-    else:
-        content = await _render_live(client, sid)
-        console.print(content)
+    await _display(lambda: _render_live(client, sid), watch=args.watch)
 
 
 async def _cmd_modules(client: NepViewer, args: argparse.Namespace) -> None:
-    """Per-panel module view."""
     sid = await resolve_sid(client, args.sid)
-
-    if args.watch:
-        with Live(console=console, refresh_per_second=0.5) as live:
-            while True:
-                try:
-                    content = await _render_modules(client, sid)
-                    live.update(content)
-                    await asyncio.sleep(WATCH_INTERVAL)
-                except KeyboardInterrupt:
-                    break
-    else:
-        content = await _render_modules(client, sid)
-        console.print(content)
+    await _display(lambda: _render_modules(client, sid), watch=args.watch)
 
 
 async def _cmd_weather(client: NepViewer, args: argparse.Namespace) -> None:
-    """7-day weather forecast."""
     sid = await resolve_sid(client, args.sid)
-    content = await _render_weather(client, sid)
-    console.print(content)
+    await _display(lambda: _render_weather(client, sid))
 
 
 # ── registration ───────────────────────────────────────────────────────
