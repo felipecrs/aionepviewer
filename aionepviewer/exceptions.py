@@ -1,10 +1,10 @@
-"""Exceptions for the aionep library."""
+"""Exceptions for the aionepviewer library."""
 
 from __future__ import annotations
 
 
 class NepError(Exception):
-    """Base exception for aionep."""
+    """Base exception for aionepviewer."""
 
 
 class NepAuthError(NepError):

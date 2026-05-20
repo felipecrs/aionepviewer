@@ -23,7 +23,7 @@ class NepAuth:
     """Handles authentication and signed requests to the NEP API.
 
     This class manages the JWT token lifecycle and provides the low-level
-    ``request`` method used by :class:`~aionep.client.NepViewer`.
+    ``request`` method used by :class:`~aionepviewer.client.NepViewer`.
 
     Parameters
     ----------

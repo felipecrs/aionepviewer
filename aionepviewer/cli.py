@@ -1,4 +1,4 @@
-"""Command-line interface for aionep."""
+"""Command-line interface for aionepviewer."""
 
 from __future__ import annotations
 
@@ -21,14 +21,14 @@ from .models import ChartType, DateStatisticsType
 
 def _make_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="aionep",
+        prog="aionepviewer",
         description="CLI for the NEP solar inverter cloud API (nepviewer.net)",
     )
     parser.add_argument(
-        "--email", "-e", help="NEP account email (or set AIONEP_EMAIL env var)"
+        "--email", "-e", help="NEP account email (or set AIONEPVIEWER_EMAIL env var)"
     )
     parser.add_argument(
-        "--password", "-p", help="NEP account password (or set AIONEP_PASSWORD env var)"
+        "--password", "-p", help="NEP account password (or set AIONEPVIEWER_PASSWORD env var)"
     )
     parser.add_argument(
         "--host", default=DEFAULT_HOST, help=f"API host (default: {DEFAULT_HOST})"
@@ -125,8 +125,8 @@ def _get_credentials(
 ) -> tuple[str, str]:
     import os
 
-    email = args.email or os.environ.get("AIONEP_EMAIL", "")
-    password = args.password or os.environ.get("AIONEP_PASSWORD", "")
+    email = args.email or os.environ.get("AIONEPVIEWER_EMAIL", "")
+    password = args.password or os.environ.get("AIONEPVIEWER_PASSWORD", "")
     if not email:
         email = input("Email: ")
     if not password:

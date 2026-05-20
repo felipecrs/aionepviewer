@@ -1,5 +1,5 @@
 [project]
-name = "aionep"
+name = "aionepviewer"
 version = "0.1.0"
 description = "Async Python library for the NEP solar inverter cloud API (nepviewer.net)"
 readme = "README.md"
@@ -28,7 +28,7 @@ dev = [
 ]
 
 [project.scripts]
-aionep = "aionep.cli:main"
+aionepviewer = "aionepviewer.cli:main"
 
 [build-system]
 requires = ["hatchling"]

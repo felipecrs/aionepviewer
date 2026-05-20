@@ -9,9 +9,9 @@ import pytest
 from aiohttp import ClientSession
 from aioresponses import aioresponses
 
-from aionep import NepViewer
-from aionep.const import API_BASE_PATH, DEFAULT_HOST
-from aionep.exceptions import NepApiError, NepAuthError
+from aionepviewer import NepViewer
+from aionepviewer.const import API_BASE_PATH, DEFAULT_HOST
+from aionepviewer.exceptions import NepApiError, NepAuthError
 
 from .conftest import (
     DEVICE_LIST_RESPONSE,
@@ -190,7 +190,7 @@ async def test_get_site_layout() -> None:
 
 def test_sign_header_computed() -> None:
     """Verify that the sign header is MD5(body).upper()."""
-    from aionep.auth import NepAuth
+    from aionepviewer.auth import NepAuth
 
     # Empty body → well-known MD5 of empty string
     assert NepAuth._compute_sign(b"") == "D41D8CD98F00B204E9800998ECF8427E"

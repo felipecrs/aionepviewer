@@ -1,4 +1,4 @@
-"""Shared fixtures for aionep tests."""
+"""Shared fixtures for aionepviewer tests."""
 
 from __future__ import annotations
 

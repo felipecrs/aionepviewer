@@ -1,4 +1,4 @@
-# aionep
+# aionepviewer
 
 Async Python library for the [NEP solar inverter](https://www.nepviewer.com/) cloud API (`api.nepviewer.net`).
 
@@ -21,13 +21,13 @@ Designed as a backend library for [Home Assistant](https://www.home-assistant.io
 ## Installation
 
 ```bash
-pip install aionep
+pip install aionepviewer
 ```
 
 Or with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-uv add aionep
+uv add aionepviewer
 ```
 
 ## Quick Start
@@ -35,7 +35,7 @@ uv add aionep
 ```python
 import asyncio
 import aiohttp
-from aionep import NepViewer
+from aionepviewer import NepViewer
 
 async def main():
     async with aiohttp.ClientSession() as session:
@@ -75,7 +75,7 @@ This library is designed to be used inside a Home Assistant custom integration. 
 
 ```python
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from aionep import NepViewer, NepAuthError
+from aionepviewer import NepViewer, NepAuthError
 
 async def async_setup_entry(hass, entry):
     session = async_get_clientsession(hass)
@@ -186,42 +186,42 @@ Credentials can be provided via flags, environment variables, or interactive pro
 
 ```bash
 # Flags
-aionep -e user@example.com -p secret sites
+aionepviewer -e user@example.com -p secret sites
 
 # Environment variables
-export AIONEP_EMAIL=user@example.com
-export AIONEP_PASSWORD=secret
-aionep sites
+export AIONEPVIEWER_EMAIL=user@example.com
+export AIONEPVIEWER_PASSWORD=secret
+aionepviewer sites
 
 # Interactive prompt (if not provided)
-aionep sites
+aionepviewer sites
 ```
 
 ### Commands
 
 ```bash
-aionep login                              # Verify credentials
-aionep overview                           # Global production & benefit summary
-aionep sites                              # List all sites with device summaries
-aionep site-detail  <sid>                 # Full site information
-aionep site-overview <sid>                # Production, energy flow, alerts
-aionep site-modules  <sid>                # Per-panel microinverter data
-aionep site-weather  <sid>                # 7-day forecast
+aionepviewer login                              # Verify credentials
+aionepviewer overview                           # Global production & benefit summary
+aionepviewer sites                              # List all sites with device summaries
+aionepviewer site-detail  <sid>                 # Full site information
+aionepviewer site-overview <sid>                # Production, energy flow, alerts
+aionepviewer site-modules  <sid>                # Per-panel microinverter data
+aionepviewer site-weather  <sid>                # 7-day forecast
 
-aionep devices                            # List all devices
-aionep device-detail <sid> <sn>           # Full device information
-aionep device-stats  <sn>                 # Production, benefit, energy flow
-aionep device-params <sn>                 # Available power parameters
-aionep device-energy <sn> 2026-05-20      # Day energy stats
-aionep device-energy <sn> 2026-05                # Month energy stats
-aionep device-playback <sn>               # Today's 5-min playback
-aionep device-playback <sn> --date 2026-05-20    # Specific date
+aionepviewer devices                            # List all devices
+aionepviewer device-detail <sid> <sn>           # Full device information
+aionepviewer device-stats  <sn>                 # Production, benefit, energy flow
+aionepviewer device-params <sn>                 # Available power parameters
+aionepviewer device-energy <sn> 2026-05-20      # Day energy stats
+aionepviewer device-energy <sn> 2026-05                # Month energy stats
+aionepviewer device-playback <sn>               # Today's 5-min playback
+aionepviewer device-playback <sn> --date 2026-05-20    # Specific date
 ```
 
 Add `--json` / `-j` to any command for machine-readable JSON output:
 
 ```bash
-aionep -j site-overview BR_20260317_tXFI
+aionepviewer -j site-overview BR_20260317_tXFI
 ```
 
 ## Development
@@ -234,7 +234,7 @@ uv sync
 uv run pytest
 
 # Type checking
-uv run mypy aionep
+uv run mypy aionepviewer
 ```
 
 ## License

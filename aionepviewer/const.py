@@ -1,4 +1,4 @@
-"""Constants for the aionep library."""
+"""Constants for the aionepviewer library."""
 
 from __future__ import annotations
 

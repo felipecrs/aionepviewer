@@ -1,1 +1,1 @@
-"""Tests for aionep."""
+"""Tests for aionepviewer."""

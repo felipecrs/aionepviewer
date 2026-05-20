@@ -1,4 +1,4 @@
-"""aionep - Async Python library for the NEP solar inverter cloud API."""
+"""aionepviewer - Async Python library for the NEP solar inverter cloud API."""
 
 from .auth import NepAuth
 from .client import NepViewer

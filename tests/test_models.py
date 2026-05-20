@@ -1,8 +1,8 @@
-"""Tests for aionep data models."""
+"""Tests for aionepviewer data models."""
 
 from __future__ import annotations
 
-from aionep.models import (
+from aionepviewer.models import (
     AlertInfo,
     AuthData,
     ChartData,
