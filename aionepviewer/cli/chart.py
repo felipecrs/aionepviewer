@@ -27,7 +27,7 @@ def _render_bar_chart(
     color: str = "yellow",
 ) -> None:
     """Render a horizontal bar chart with termgraph."""
-    from termgraph.module import Data, Args, BarChart
+    from termgraph.module import Data, Args, BarChart  # type: ignore[import-untyped]
 
     if not values or all(v == 0 for v in values):
         console.print(f"[dim]  No data to chart.[/dim]")
@@ -77,7 +77,7 @@ async def _chart_production(client: NepViewer, args: argparse.Namespace) -> None
     period: str = args.period
 
     if period == "day":
-        chart_type = ChartType.INTRADAY_POWER
+        chart_type = ChartType.DAY
         chart_date = args.date or date.today().isoformat()
         title = f"Production: {sn} ({chart_date})"
         suffix = " W"
@@ -104,8 +104,9 @@ async def _chart_production(client: NepViewer, args: argparse.Namespace) -> None
         print(f"Unknown period: {period}", file=sys.stderr)
         sys.exit(1)
 
+    lines = ["Production"] if chart_type == ChartType.DAY else []
     chart_data = await client.get_device_statistics_chart(
-        sn, chart_type, date=chart_date,
+        sn, chart_type, date=chart_date, lines=lines,
     )
 
     if not chart_data.series:

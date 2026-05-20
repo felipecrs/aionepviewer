@@ -6,6 +6,7 @@ import argparse
 import asyncio
 import sys
 from datetime import datetime
+from typing import Any
 
 from rich.console import Console, Group
 from rich.panel import Panel
@@ -216,7 +217,7 @@ async def _render_live(client: NepViewer, sid: str) -> Group:
             )
 
     # Alert
-    parts: list = [Columns([flow_panel, prod_panel], equal=True, expand=True), "", mod_table]
+    parts: list[Any] = [Columns([flow_panel, prod_panel], equal=True, expand=True), "", mod_table]
 
     if not overview.alert.is_ok:
         alert_panel = Panel(
@@ -238,7 +239,7 @@ async def _render_modules(client: NepViewer, sid: str) -> Group:
     """Build the modules view renderable."""
     modules_data = await client.get_site_modules(sid)
 
-    parts = []
+    parts: list[Any] = []
     for dev in modules_data.devices:
         status = _status_dot(dev.status == 0)
         table = Table(

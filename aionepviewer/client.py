@@ -252,8 +252,9 @@ class NepViewer:
             body["date"] = date
         if range_date:
             body["rangeDate"] = range_date
-        if chart_type == ChartType.DAY:
+        if chart_type in (ChartType.DAY, ChartType.INTRADAY_POWER):
             body["weatherHours"] = weather_hours
+        if chart_type == ChartType.DAY:
             body["minInterval"] = min_interval
             if lines:
                 body["lines"] = lines

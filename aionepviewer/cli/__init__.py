@@ -80,12 +80,12 @@ def get_host(args: argparse.Namespace) -> str:
     """Resolve API host using the precedence chain."""
     # If the user explicitly passed --host, use it (argparse default is DEFAULT_HOST)
     if args.host != DEFAULT_HOST:
-        return args.host
+        return str(args.host)
     env_host = os.environ.get("AIONEPVIEWER_HOST", "")
     if env_host:
         return env_host
     cfg = load_config()
-    return cfg.get("host", DEFAULT_HOST)
+    return str(cfg.get("host", DEFAULT_HOST))
 
 
 def dump_json(obj: Any) -> str:
@@ -232,9 +232,9 @@ async def _async_main(args: argparse.Namespace) -> None:
 def main() -> None:
     # Ensure UTF-8 output on Windows (needed for termgraph block chars and rich)
     if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
+        sys.stdout.reconfigure(encoding="utf-8")
     if hasattr(sys.stderr, "reconfigure"):
-        sys.stderr.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
+        sys.stderr.reconfigure(encoding="utf-8")
 
     parser = _build_parser()
     args = parser.parse_args()
