@@ -16,8 +16,10 @@ from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
 
-from ..client import NepViewer
-from ..models import DeviceModules, DeviceOverviewItem, Module, SiteModulesData, SiteOverview
+from ..models.device import DeviceOverviewItem
+from ..models.module import DeviceModules, Module, SiteModulesData
+from ..models.site import SiteOverview
+from ..nepviewer import NepViewer
 
 console = Console()
 

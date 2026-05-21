@@ -58,7 +58,7 @@ class TestAuthData:
             },
             "siteCount": 2,
         }
-        auth = AuthData.from_dict(raw)
+        auth = AuthData.from_api(raw)
         assert auth.user_info.uid == "uid_123"
         assert auth.user_info.email == "test@example.com"
         assert auth.token_info.token == "jwt_token"
@@ -99,14 +99,14 @@ class TestDevice:
             "RAMVersion": "",
             "alias": "",
         }
-        device = Device.from_dict(raw)
+        device = Device.from_api(raw)
         assert device.sn == "AABB1122"
         assert device.model_name == "BDM-2250"
         assert device.now == 1500
         assert device.is_online is True
 
     def test_offline(self) -> None:
-        device = Device.from_dict({"status": -1, "statusTitle": "offline"})
+        device = Device.from_api({"status": -1, "statusTitle": "offline"})
         assert device.is_online is False
 
 
@@ -160,7 +160,7 @@ class TestSite:
             "lastUpdateCal": "",
             "lastUpdateTime": 0,
         }
-        site = Site.from_dict(raw)
+        site = Site.from_api(raw)
         assert site.sid == "SITE_1"
         assert site.site_name == "My Site"
         assert len(site.devices) == 1
@@ -187,7 +187,7 @@ class TestModule:
             "model": 0,
             "model_name": "-",
         }
-        mod = Module.from_dict(raw)
+        mod = Module.from_api(raw)
         assert mod.plc_sn == "AABB1122_1"
         assert mod.now == 400
         assert mod.total_power == 50
@@ -202,7 +202,7 @@ class TestEnergyFlow:
             "battery": {"power": 0, "powerUnit": "W", "direction": 0, "show": False, "rate": 0, "showPower": False},
             "gen": {"power": 0, "powerUnit": "W", "direction": 0, "show": False, "rate": 0, "showPower": False},
         }
-        energy = EnergyFlow.from_dict(raw)
+        energy = EnergyFlow.from_api(raw)
         assert energy.pv_panel.power == 1000
         assert energy.pv_panel.show is True
         assert energy.battery.show is False
@@ -210,11 +210,11 @@ class TestEnergyFlow:
 
 class TestAlertInfo:
     def test_ok(self) -> None:
-        alert = AlertInfo.from_dict({"code": "0000", "title": "OK", "desc": "ok"})
+        alert = AlertInfo.from_api({"code": "0000", "title": "OK", "desc": "ok"})
         assert alert.is_ok is True
 
     def test_not_ok(self) -> None:
-        alert = AlertInfo.from_dict({"code": "0040", "title": "AC voltage RMS over", "desc": "unstable"})
+        alert = AlertInfo.from_api({"code": "0040", "title": "AC voltage RMS over", "desc": "unstable"})
         assert alert.is_ok is False
 
 
@@ -225,7 +225,7 @@ class TestChartData:
             "xAxisData": ["01", "02", "03"],
             "series": [{"stack": "", "name": "2026", "data": [10, 20, None]}],
         }
-        chart = ChartData.from_dict(raw)
+        chart = ChartData.from_api(raw)
         assert chart.legend == ["Power Generation"]
         assert len(chart.x_axis_data) == 3
         assert chart.series[0].data == [10, 20, None]
@@ -248,7 +248,7 @@ class TestWeather:
                 },
             ],
         }
-        weather = Weather.from_dict(raw)
+        weather = Weather.from_api(raw)
         assert weather.days == 7
         assert len(weather.forecasts) == 1
         assert weather.forecasts[0].temp == 20
@@ -257,7 +257,7 @@ class TestWeather:
 class TestSiteStatusCounts:
     def test_counts(self) -> None:
         raw = {"siteCount": 3, "statusMap": {"0": 2, "-1": 1}}
-        counts = SiteStatusCounts.from_dict(raw)
+        counts = SiteStatusCounts.from_api(raw)
         assert counts.online_count == 2
         assert counts.offline_count == 1
 
@@ -275,7 +275,7 @@ class TestPlaybackData:
             ],
             "unit": "W",
         }
-        pb = PlaybackData.from_dict(raw)
+        pb = PlaybackData.from_api(raw)
         assert len(pb.modules) == 1
         assert pb.modules[0].plc_sn == "AAA_1"
         assert pb.overview.series[0].data == [0, 10]
@@ -291,7 +291,7 @@ class TestDateStatistics:
             "consumptionUnit": "kWh",
             "economicUnit": "USD",
         }
-        ds = DateStatistics.from_dict(raw)
+        ds = DateStatistics.from_api(raw)
         assert ds.power == "5.5"
         assert ds.economic_unit == "USD"
 
@@ -322,7 +322,7 @@ class TestProductInfo:
             ],
             "is_exist": False,
         }
-        info = ProductInfo.from_dict(raw)
+        info = ProductInfo.from_api(raw)
         assert info.sn == "86D4EC90"
         assert info.model_name == "BDM-2250"
         assert info.model == 11
@@ -342,14 +342,14 @@ class TestDeviceWifiOta:
             "advice": 2,
             "address": "",
         }
-        ota = DeviceWifiOta.from_dict(raw)
+        ota = DeviceWifiOta.from_api(raw)
         assert ota.sn == "86d33ec0"
         assert ota.wifi_version == "3.01.25"
         assert ota.advice == 2
         assert ota.update_available is False
 
     def test_update_available(self) -> None:
-        ota = DeviceWifiOta.from_dict({"sn": "ABC", "wifiVersion": "1.0", "advice": 1, "address": "http://fw.bin"})
+        ota = DeviceWifiOta.from_api({"sn": "ABC", "wifiVersion": "1.0", "advice": 1, "address": "http://fw.bin"})
         assert ota.update_available is True
 
 
@@ -361,7 +361,7 @@ class TestSiteLayout:
             "layoutPic": "http://example.com/pic.jpg",
             "layoutScale": 1.5,
         }
-        layout = SiteLayout.from_dict(raw)
+        layout = SiteLayout.from_api(raw)
         assert layout.sid == "BR_20260317_tXFI"
         assert layout.site_name == "Test Site"
         assert layout.layout_pic == "http://example.com/pic.jpg"

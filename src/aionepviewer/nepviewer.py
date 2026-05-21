@@ -8,31 +8,22 @@ import aiohttp
 
 from .auth import NepAuth
 from .const import DEFAULT_HOST
-from .models import (
-    AccountInfo,
-    AuthData,
-    ChartData,
-    ChartType,
-    DateStatistics,
-    DateStatisticsType,
+from .models.auth import AccountInfo, AuthData
+from .models.chart import ChartData, ChartType, DateStatistics, DateStatisticsType
+from .models.device import (
     Device,
     DeviceDetail,
     DeviceStatisticsOverview,
     DeviceWifiOta,
-    OverviewData,
-    PlaybackData,
-    PlaybackType,
     PowerParameter,
-    ProductInfo,
-    ReportSettings,
-    Site,
-    SiteDetail,
-    SiteLayout,
-    SiteModulesData,
-    SiteOverview,
-    SiteStatusCounts,
-    Weather,
 )
+from .models.module import SiteModulesData
+from .models.overview import OverviewData
+from .models.playback import PlaybackData, PlaybackType
+from .models.product import ProductInfo
+from .models.report import ReportSettings
+from .models.site import Site, SiteDetail, SiteLayout, SiteOverview, SiteStatusCounts
+from .models.weather import Weather
 
 
 class NepViewer:
@@ -104,7 +95,7 @@ class NepViewer:
         Returns contact details, location, group membership, and OEM info.
         """
         data = await self._auth.request("POST", "/account/info")
-        return AccountInfo.from_dict(data)
+        return AccountInfo.from_api(data)
 
     # ------------------------------------------------------------------
     # Global Overview
@@ -113,12 +104,12 @@ class NepViewer:
     async def get_overview(self) -> OverviewData:
         """Get the global overview for all sites (production, benefit, counts)."""
         data = await self._auth.request("POST", "/overview/overview")
-        return OverviewData.from_dict(data)
+        return OverviewData.from_api(data)
 
     async def get_site_status_counts(self) -> SiteStatusCounts:
         """Get the count of sites by online/offline status."""
         data = await self._auth.request("POST", "/overview/siteStatusCounts")
-        return SiteStatusCounts.from_dict(data)
+        return SiteStatusCounts.from_api(data)
 
     # ------------------------------------------------------------------
     # Device List
@@ -173,7 +164,7 @@ class NepViewer:
             "sort": [],
         }
         data = await self._auth.request("POST", "/device/list", json_body=body)
-        return [Device.from_dict(d) for d in data.get("list", [])]
+        return [Device.from_api(d) for d in data.get("list", [])]
 
     # ------------------------------------------------------------------
     # Device Detail & Statistics
@@ -192,7 +183,7 @@ class NepViewer:
         data = await self._auth.request(
             "POST", "/device/detail", json_body={"sid": sid, "sn": sn}
         )
-        return DeviceDetail.from_dict(data)
+        return DeviceDetail.from_api(data)
 
     async def get_device_statistics_overview(self, sn: str) -> DeviceStatisticsOverview:
         """Get production, benefit, energy flow, and status for a device.
@@ -202,7 +193,7 @@ class NepViewer:
         data = await self._auth.request(
             "POST", "/device/statistics/overview", json_body={"sn": sn}
         )
-        return DeviceStatisticsOverview.from_dict(data)
+        return DeviceStatisticsOverview.from_api(data)
 
     async def get_device_power_parameters(self, sn: str) -> list[PowerParameter]:
         """Get the list of available power parameters for a device.
@@ -213,7 +204,7 @@ class NepViewer:
         data = await self._auth.request(
             "POST", "/device/powerParamateMap", json_body={"sn": sn}
         )
-        return [PowerParameter.from_dict(p) for p in data.get("list", [])]
+        return [PowerParameter.from_api(p) for p in data.get("list", [])]
 
     async def get_device_statistics_chart(
         self,
@@ -261,7 +252,7 @@ class NepViewer:
         data = await self._auth.request(
             "POST", "/device/statistics/echarts", json_body=body
         )
-        return ChartData.from_dict(data)
+        return ChartData.from_api(data)
 
     async def get_device_date_statistics(
         self,
@@ -285,7 +276,7 @@ class NepViewer:
             "/device/statistics/date",
             json_body={"types": int(stat_type), "date": date, "sn": sn},
         )
-        return DateStatistics.from_dict(data)
+        return DateStatistics.from_api(data)
 
     async def get_device_playback(
         self,
@@ -317,7 +308,7 @@ class NepViewer:
                 "end": end,
             },
         )
-        return PlaybackData.from_dict(data)
+        return PlaybackData.from_api(data)
 
     # ------------------------------------------------------------------
     # Site List
@@ -364,7 +355,7 @@ class NepViewer:
             "sort": [],
         }
         data = await self._auth.request("POST", "/site/listWithSN", json_body=body)
-        return [Site.from_dict(s) for s in data.get("list", [])]
+        return [Site.from_api(s) for s in data.get("list", [])]
 
     # ------------------------------------------------------------------
     # Site Detail & Overview
@@ -381,7 +372,7 @@ class NepViewer:
         data = await self._auth.request(
             "POST", "/site/detail", json_body={"sid": sid}
         )
-        return SiteDetail.from_dict(data)
+        return SiteDetail.from_api(data)
 
     async def get_site_overview(self, sid: str) -> SiteOverview:
         """Get the site overview including production, energy flow, and devices.
@@ -391,7 +382,7 @@ class NepViewer:
         data = await self._auth.request(
             "POST", "/site/overview", json_body={"sid": sid}
         )
-        return SiteOverview.from_dict(data)
+        return SiteOverview.from_api(data)
 
     async def get_site_modules(self, sid: str, page: int = 0) -> SiteModulesData:
         """Get module-level (per-panel) data for a site.
@@ -408,14 +399,14 @@ class NepViewer:
         data = await self._auth.request(
             "POST", "/site/modules", json_body={"sid": sid, "page": page}
         )
-        return SiteModulesData.from_dict(data)
+        return SiteModulesData.from_api(data)
 
     async def get_site_weather(self, sid: str) -> Weather:
         """Get the 7-day weather forecast for a site."""
         data = await self._auth.request(
             "POST", "/site/weather7Day", json_body={"sid": sid}
         )
-        return Weather.from_dict(data)
+        return Weather.from_api(data)
 
     async def get_site_statistics_chart(
         self,
@@ -451,7 +442,7 @@ class NepViewer:
         data = await self._auth.request(
             "POST", "/site/statistics/echarts", json_body=body
         )
-        return ChartData.from_dict(data)
+        return ChartData.from_api(data)
 
     async def get_site_layout(self, sid: str) -> SiteLayout:
         """Get the layout picture and scale for a site.
@@ -464,7 +455,7 @@ class NepViewer:
         data = await self._auth.request(
             "POST", "/site/layoutInfo", json_body={"sid": sid}
         )
-        return SiteLayout.from_dict(data)
+        return SiteLayout.from_api(data)
 
     # ------------------------------------------------------------------
     # Product Info
@@ -485,7 +476,7 @@ class NepViewer:
         data = await self._auth.request(
             "POST", "/product/sn/info", json_body={"sn": serial_numbers}
         )
-        return [ProductInfo.from_dict(p) for p in data.get("list", [])]
+        return [ProductInfo.from_api(p) for p in data.get("list", [])]
 
     # ------------------------------------------------------------------
     # Device WiFi OTA
@@ -513,8 +504,8 @@ class NepViewer:
         )
         # Response data is a list directly (not wrapped in a "list" key)
         if isinstance(data, list):
-            return [DeviceWifiOta.from_dict(d) for d in data]
-        return [DeviceWifiOta.from_dict(d) for d in data.get("list", [])]
+            return [DeviceWifiOta.from_api(d) for d in data]
+        return [DeviceWifiOta.from_api(d) for d in data.get("list", [])]
 
     async def update_device_wifi_version(
         self, devices: list[tuple[str, str]]
@@ -553,7 +544,7 @@ class NepViewer:
             "/site/sn/report/settings",
             json_body={"sid": sid, "sn": sn},
         )
-        return ReportSettings.from_dict(data)
+        return ReportSettings.from_api(data)
 
     async def set_report_settings(
         self,

@@ -1,7 +1,6 @@
 """aionepviewer - Async Python library for the NEP solar inverter cloud API."""
 
 from .auth import NepAuth
-from .client import NepViewer
 from .const import DEFAULT_HOST
 from .exceptions import (
     NepApiError,
@@ -10,47 +9,26 @@ from .exceptions import (
     NepError,
     NepTimeoutError,
 )
-from .models import (
-    AccountInfo,
-    AlertInfo,
-    AuthData,
-    ChartData,
-    ChartSeries,
-    ChartType,
-    DateStatistics,
-    DateStatisticsType,
+from .models.alert import AlertInfo, DeviceStatus
+from .models.auth import AccountInfo, AuthData, TokenInfo, UserInfo
+from .models.chart import ChartData, ChartSeries, ChartType, DateStatistics, DateStatisticsType
+from .models.device import (
     Device,
     DeviceDetail,
-    DeviceModules,
     DeviceOverviewItem,
     DeviceStatisticsOverview,
-    DeviceStatus,
     DeviceWifiOta,
-    EnergyFlow,
-    EnergySource,
-    EnvironmentalBenefit,
-    Module,
-    OverviewData,
-    PlaybackData,
-    PlaybackModule,
-    PlaybackType,
     PowerParameter,
-    ProductFunction,
-    ProductInfo,
-    ProductionStatistics,
-    ReportSettings,
-    Site,
-    SiteDetail,
-    SiteDeviceSummary,
-    SiteLayout,
-    SiteModulesData,
-    SiteOverview,
-    SiteStatusCounts,
-    TokenInfo,
-    UserInfo,
-    Weather,
-    WeatherDay,
 )
+from .models.energy import EnergyFlow, EnergySource, EnvironmentalBenefit, ProductionStatistics
+from .models.module import DeviceModules, Module, SiteModulesData
+from .models.overview import OverviewData
+from .models.playback import PlaybackData, PlaybackModule, PlaybackType
+from .models.product import ProductFunction, ProductInfo
+from .models.report import ReportSettings
+from .models.site import Site, SiteDetail, SiteDeviceSummary, SiteLayout, SiteOverview, SiteStatusCounts
+from .models.weather import Weather, WeatherDay
+from .nepviewer import NepViewer
 
 __all__ = [
     # Client
@@ -73,14 +51,13 @@ __all__ = [
     "AuthData",
     "UserInfo",
     "TokenInfo",
-    # Account
     "AccountInfo",
     # Energy
     "EnergyFlow",
     "EnergySource",
-    # Statistics
     "ProductionStatistics",
     "EnvironmentalBenefit",
+    # Alert
     "AlertInfo",
     # Device models
     "Device",
@@ -95,13 +72,13 @@ __all__ = [
     "ProductInfo",
     # Module models
     "Module",
+    "SiteModulesData",
     # Site models
     "Site",
     "SiteDetail",
     "SiteOverview",
     "SiteDeviceSummary",
     "SiteLayout",
-    "SiteModulesData",
     "SiteStatusCounts",
     # Chart models
     "ChartData",

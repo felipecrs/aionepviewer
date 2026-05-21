@@ -17,7 +17,7 @@ import aiohttp
 import tomli_w
 from platformdirs import user_config_path
 
-from ..client import NepViewer
+from ..nepviewer import NepViewer
 from ..const import DEFAULT_HOST
 from ..exceptions import NepAuthError, NepError
 

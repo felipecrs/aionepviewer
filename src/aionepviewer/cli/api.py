@@ -5,8 +5,8 @@ from __future__ import annotations
 import argparse
 from datetime import date
 
-from ..client import NepViewer
-from ..models import ChartType, DateStatisticsType
+from ..models.chart import ChartType, DateStatisticsType
+from ..nepviewer import NepViewer
 from . import dump_json
 
 

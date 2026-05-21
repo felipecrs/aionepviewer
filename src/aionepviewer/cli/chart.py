@@ -9,8 +9,8 @@ from datetime import date, timedelta
 from rich.console import Console
 from rich.table import Table
 
-from ..client import NepViewer
-from ..models import ChartData, ChartType
+from ..models.chart import ChartData, ChartType
+from ..nepviewer import NepViewer
 from . import resolve_sn, resolve_sid
 
 console = Console()

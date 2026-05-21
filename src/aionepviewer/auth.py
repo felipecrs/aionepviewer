@@ -16,7 +16,7 @@ from .exceptions import (
     NepConnectionError,
     NepTimeoutError,
 )
-from .models import AuthData, TokenInfo
+from .models.auth import AuthData, TokenInfo
 
 
 class NepAuth:
@@ -79,7 +79,7 @@ class NepAuth:
         """
         body = {"account": self._email, "password": self._password}
         data = await self._raw_request("POST", "/sign-in", json_body=body, auth=False)
-        auth_data = AuthData.from_dict(data)
+        auth_data = AuthData.from_api(data)
         self._token_info = auth_data.token_info
         return auth_data
 
