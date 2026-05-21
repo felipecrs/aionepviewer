@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This is AI-generated content with very little QA on top.
+
 # aionepviewer
 
 Async Python library for the [NEP solar inverter](https://www.nepviewer.com/) cloud API (`api.nepviewer.net`).
