@@ -9,15 +9,15 @@ from datetime import datetime
 from typing import Any
 
 from rich.console import Console, Group
+from rich.columns import Columns
+from rich.live import Live
 from rich.panel import Panel
 from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
-from rich.columns import Columns
-from rich.live import Live
 
 from ..client import NepViewer
-from ..models import SiteModulesData, SiteOverview
+from ..models import DeviceModules, DeviceOverviewItem, Module, SiteModulesData, SiteOverview
 
 console = Console()
 
@@ -25,28 +25,6 @@ WATCH_INTERVAL = 300  # 5 minutes
 
 
 # ── formatting helpers ─────────────────────────────────────────────────
-
-
-def _status_dot(is_online: bool) -> str:
-    return "[green]●[/green]" if is_online else "[red]●[/red]"
-
-
-def _alert_text(code: str, title: str) -> str:
-    if code == "0000":
-        return "[green]OK[/green]"
-    return f"[bold red]{title}[/bold red]"
-
-
-def _power_color(value: float, max_value: float = 2000) -> str:
-    """Return a rich color tag based on power output relative to max."""
-    if value <= 0:
-        return "dim"
-    ratio = min(value / max_value, 1.0)
-    if ratio > 0.7:
-        return "bold green"
-    if ratio > 0.3:
-        return "green"
-    return "yellow"
 
 
 WEATHER_ICONS = {
@@ -64,6 +42,65 @@ WEATHER_ICONS = {
     "thunder-showers-day": "⛈️ ",
     "wind": "💨",
 }
+
+
+def _status_dot(is_online: bool) -> str:
+    return "[green]●[/green]" if is_online else "[red]●[/red]"
+
+
+def _power_style(value: float, max_value: float = 2000) -> str:
+    """Return a rich style string based on power output relative to max."""
+    if value <= 0:
+        return "dim"
+    ratio = min(value / max_value, 1.0)
+    if ratio > 0.7:
+        return "bold green"
+    if ratio > 0.3:
+        return "green"
+    return "yellow"
+
+
+def _module_panel(m: Module) -> Panel:
+    """Render a single solar panel module as a small box."""
+    power_sty = _power_style(m.now)
+    is_ok = m.status == "0000"
+    border = "green" if is_ok else "red"
+
+    body = Text.assemble(
+        (f"{m.now} {m.now_unit}\n", power_sty),
+        (f"{m.today_power} {m.today_power_unit} today\n", ""),
+        (f"{m.total_power} {m.total_power_unit} total", "dim"),
+    )
+
+    title = f"[bold]#{m.addr}[/bold]"
+    if not is_ok:
+        title += f" [red]⚠ {m.status}[/red]"
+
+    return Panel(body, title=title, border_style=border, width=22, height=6)
+
+
+def _device_header(
+    dev: DeviceModules,
+    dev_overview: DeviceOverviewItem | None,
+) -> Panel:
+    """Render the device summary bar."""
+    is_online = dev.status == 0
+    dot = _status_dot(is_online)
+
+    grid = Table.grid(padding=(0, 3))
+    grid.add_column(style="bold")
+    grid.add_column()
+
+    grid.add_row("Status", f"{dot} {dev.status_title}")
+    if dev_overview:
+        grid.add_row("Power", f"[{_power_style(float(dev_overview.now))}]{dev_overview.now} {dev_overview.now_unit}[/]")
+        grid.add_row("Today", f"{dev_overview.today} {dev_overview.today_unit}")
+    if dev.alert_code and dev.alert_code != "0000":
+        grid.add_row("Alert", f"[bold red]{dev.alert_title}[/bold red]")
+    if dev.version:
+        grid.add_row("Firmware", f"[dim]{dev.version}[/dim]")
+
+    return Panel(grid, title=f"[bold]{dev.sn}[/bold] ({dev.model_name})", border_style="cyan")
 
 
 # ── site detail renderable ────────────────────────────────────────────
@@ -97,50 +134,31 @@ def _build_site_detail(
 
     # Production stats
     prod = overview.production
-    prod_table = Table.grid(padding=(0, 3))
-    prod_table.add_column(style="bold")
-    prod_table.add_column()
-    prod_table.add_row("Current", f"[bold yellow]{prod.total_now}[/bold yellow] {prod.total_now_unit}")
-    prod_table.add_row("Today", f"{prod.today} {prod.today_unit}  ([green]{prod.today_money}[/green] {prod.total_money_unit})")
-    prod_table.add_row("Month", f"{prod.month} {prod.month_unit}")
-    prod_table.add_row("Year", f"{prod.year} {prod.year_unit}")
-    prod_table.add_row("Lifetime", f"[bold]{prod.total}[/bold] {prod.total_unit}")
-    prod_panel = Panel(prod_table, title="Production", border_style="green")
+    prod_grid = Table.grid(padding=(0, 3))
+    prod_grid.add_column(style="bold")
+    prod_grid.add_column()
+    prod_grid.add_row("Current", f"[bold yellow]{prod.total_now}[/bold yellow] {prod.total_now_unit}")
+    prod_grid.add_row("Today", f"{prod.today} {prod.today_unit}  ([green]{prod.today_money}[/green] {prod.total_money_unit})")
+    prod_grid.add_row("Month", f"{prod.month} {prod.month_unit}")
+    prod_grid.add_row("Year", f"{prod.year} {prod.year_unit}")
+    prod_grid.add_row("Lifetime", f"[bold]{prod.total}[/bold] {prod.total_unit}")
+    prod_panel = Panel(prod_grid, title="Production", border_style="green")
 
     parts: list[Any] = [Columns([flow_panel, prod_panel], equal=True, expand=True)]
 
-    # Modules grouped by device
-    for dev in modules_data.devices:
-        status = _status_dot(dev.status == 0)
-        table = Table(
-            title=f"{status} {dev.sn} ({dev.model_name})",
-            show_header=True,
-            header_style="bold",
-        )
-        table.add_column("Panel", style="cyan")
-        table.add_column("Addr", justify="center")
-        table.add_column("Power", justify="right")
-        table.add_column("Today", justify="right")
-        table.add_column("Total", justify="right")
-        table.add_column("Status")
+    # Build a quick SN→DeviceOverviewItem lookup from the site overview
+    dev_overview_map: dict[str, DeviceOverviewItem] = {
+        d.sn.upper(): d for d in overview.device_list
+    }
 
-        for m in dev.modules:
-            color = _power_color(m.now)
-            alert = ""
-            if m.status != "0000":
-                alert = f"[red]⚠ {m.status}[/red]"
-            table.add_row(
-                m.plc_sn,
-                str(m.addr),
-                f"[{color}]{m.now}[/] {m.now_unit}",
-                f"{m.today_power} {m.today_power_unit}",
-                f"{m.total_power} {m.total_power_unit}",
-                f"[green]OK[/green]" if not alert else alert,
-            )
-        if dev.alert_code and dev.alert_code != "0000":
-            table.caption = f"[red]Alert: {dev.alert_title}[/red]"
+    # Devices + module panels
+    for dev in modules_data.devices:
+        dev_ov = dev_overview_map.get(dev.sn.upper())
         parts.append("")
-        parts.append(table)
+        parts.append(_device_header(dev, dev_ov))
+        if dev.modules:
+            module_boxes = [_module_panel(m) for m in dev.modules]
+            parts.append(Columns(module_boxes, equal=False, expand=False, padding=(0, 1)))
 
     # Site-level alert
     if not overview.alert.is_ok:
@@ -171,7 +189,7 @@ async def _render_status(client: NepViewer, site_filter: str | None) -> Group:
     show_overview = site_filter is None
     overview = await client.get_overview() if show_overview else None
 
-    # Fetch detail for each site in parallel
+    # Fetch detail for each site
     site_data: list[tuple[str, SiteOverview, SiteModulesData]] = []
     for s in sites:
         so, sm = await asyncio.gather(
