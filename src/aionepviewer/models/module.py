@@ -80,7 +80,7 @@ class DeviceModules:
 
     @property
     def sn(self) -> str:
-        return self.raw_data.get("sn", "")
+        return self.raw_data.get("sn", "").upper()
 
     @property
     def is_phase(self) -> bool:

@@ -20,7 +20,7 @@ class Device:
 
     @property
     def sn(self) -> str:
-        return self.raw_data.get("sn", "")
+        return self.raw_data.get("sn", "").upper()
 
     @property
     def status(self) -> int:
@@ -147,7 +147,7 @@ class DeviceDetail:
 
     @property
     def sn(self) -> str:
-        return self.raw_data.get("sn", "")
+        return self.raw_data.get("sn", "").upper()
 
     @property
     def model_int(self) -> int:
@@ -380,7 +380,7 @@ class DeviceOverviewItem:
 
     @property
     def sn(self) -> str:
-        return self.raw_data.get("sn", "")
+        return self.raw_data.get("sn", "").upper()
 
     @property
     def model(self) -> int:
@@ -427,7 +427,7 @@ class DeviceWifiOta:
 
     @property
     def sn(self) -> str:
-        return self.raw_data.get("sn", "")
+        return self.raw_data.get("sn", "").upper()
 
     @property
     def wifi_version(self) -> str:

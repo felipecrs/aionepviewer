@@ -173,7 +173,7 @@ async def test_get_device_wifi_ota() -> None:
             results = await client.get_device_wifi_ota([("86d33ec0", "")])
 
         assert len(results) == 1
-        assert results[0].sn == "86d33ec0"
+        assert results[0].sn == "86D33EC0"
         assert results[0].wifi_version == "3.01.25"
         assert results[0].update_available is False
 

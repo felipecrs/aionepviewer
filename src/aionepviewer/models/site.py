@@ -21,7 +21,7 @@ class SiteDeviceSummary:
 
     @property
     def sn(self) -> str:
-        return self.raw_data.get("sn", "")
+        return self.raw_data.get("sn", "").upper()
 
     @property
     def model(self) -> str:

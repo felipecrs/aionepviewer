@@ -343,7 +343,7 @@ class TestDeviceWifiOta:
             "address": "",
         }
         ota = DeviceWifiOta(raw)
-        assert ota.sn == "86d33ec0"
+        assert ota.sn == "86D33EC0"
         assert ota.wifi_version == "3.01.25"
         assert ota.advice == 2
         assert ota.update_available is False
