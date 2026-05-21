@@ -91,7 +91,7 @@ async def test_get_site_overview() -> None:
             client = NepViewer(session, "test@example.com", "password")
             overview = await client.get_site_overview("US_TEST_SITE")
 
-        assert overview.production.today == "5.5"
+        assert overview.production.today == 5.5
         assert overview.energy.pv_panel.power == 1500
         assert overview.alert.is_ok is True
         assert overview.is_online is True

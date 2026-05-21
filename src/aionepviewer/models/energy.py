@@ -70,68 +70,68 @@ class ProductionStatistics:
         self.raw_data = raw_data
 
     @property
-    def today(self) -> str:
-        return self.raw_data.get("today", "0")
+    def today(self) -> float:
+        return float(self.raw_data.get("today", 0))
 
     @property
     def today_unit(self) -> str:
         return self.raw_data.get("todayUnit", "kWh")
 
     @property
-    def yesterday(self) -> str:
-        return self.raw_data.get("yesterday", "0")
+    def yesterday(self) -> float:
+        return float(self.raw_data.get("yesterday", 0))
 
     @property
     def yesterday_unit(self) -> str:
         return self.raw_data.get("yesterdayUnit", "kWh")
 
     @property
-    def month(self) -> str:
-        return self.raw_data.get("month", "0")
+    def month(self) -> float:
+        return float(self.raw_data.get("month", 0))
 
     @property
     def month_unit(self) -> str:
         return self.raw_data.get("monthUnit", "kWh")
 
     @property
-    def year(self) -> str:
-        return self.raw_data.get("year", "0")
+    def year(self) -> float:
+        return float(self.raw_data.get("year", 0))
 
     @property
     def year_unit(self) -> str:
         return self.raw_data.get("yearUnit", "kWh")
 
     @property
-    def total(self) -> str:
-        return self.raw_data.get("total", "0")
+    def total(self) -> float:
+        return float(self.raw_data.get("total", 0))
 
     @property
     def total_unit(self) -> str:
         return self.raw_data.get("totalUnit", "kWh")
 
     @property
-    def total_now(self) -> str:
-        return self.raw_data.get("totalNow", "0")
+    def total_now(self) -> float:
+        return float(self.raw_data.get("totalNow", 0))
 
     @property
     def total_now_unit(self) -> str:
         return self.raw_data.get("totalNowUnit", "W")
 
     @property
-    def total_money(self) -> str:
-        return self.raw_data.get("totalMoney", "0")
+    def total_money(self) -> float:
+        return float(self.raw_data.get("totalMoney", 0))
 
     @property
-    def today_money(self) -> str:
-        return self.raw_data.get("todayMoney", "0")
+    def today_money(self) -> float:
+        return float(self.raw_data.get("todayMoney", 0))
 
     @property
-    def yesterday_money(self) -> str:
-        return self.raw_data.get("yesterdayMoney", "0")
+    def yesterday_money(self) -> float:
+        return float(self.raw_data.get("yesterdayMoney", 0))
 
     @property
-    def month_money(self) -> str:
-        return self.raw_data.get("monthMoney", "0")
+    def month_money(self) -> float:
+        return float(self.raw_data.get("monthMoney", 0))
 
     @property
     def total_money_unit(self) -> str:
@@ -145,40 +145,40 @@ class EnvironmentalBenefit:
         self.raw_data = raw_data
 
     @property
-    def co2(self) -> str:
-        return self.raw_data.get("co2", "0")
+    def co2(self) -> float:
+        return float(self.raw_data.get("co2", 0))
 
     @property
     def co2_unit(self) -> str:
         return self.raw_data.get("co2Unit", "kg")
 
     @property
-    def tree(self) -> str:
-        return self.raw_data.get("tree", "0")
+    def tree(self) -> float:
+        return float(self.raw_data.get("tree", 0))
 
     @property
     def tree_unit(self) -> str:
         return self.raw_data.get("treeUnit", "Trees")
 
     @property
-    def car(self) -> str:
-        return self.raw_data.get("car", "0")
+    def car(self) -> float:
+        return float(self.raw_data.get("car", 0))
 
     @property
     def car_unit(self) -> str:
         return self.raw_data.get("carUnit", "km")
 
     @property
-    def light(self) -> str:
-        return self.raw_data.get("light", "0")
+    def light(self) -> float:
+        return float(self.raw_data.get("light", 0))
 
     @property
     def light_unit(self) -> str:
         return self.raw_data.get("lightUnit", "H")
 
     @property
-    def oil(self) -> str:
-        return self.raw_data.get("oil", "0")
+    def oil(self) -> float:
+        return float(self.raw_data.get("oil", 0))
 
     @property
     def oil_unit(self) -> str:
