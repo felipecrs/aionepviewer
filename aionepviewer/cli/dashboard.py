@@ -1,4 +1,4 @@
-"""Human-friendly commands with rich formatting, colors, and --watch support."""
+"""Human-friendly dashboard commands with rich formatting and --watch support."""
 
 from __future__ import annotations
 
@@ -10,13 +10,14 @@ from typing import Any
 
 from rich.console import Console, Group
 from rich.panel import Panel
+from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
 from rich.columns import Columns
 from rich.live import Live
 
 from ..client import NepViewer
-from . import resolve_sid
+from ..models import SiteModulesData, SiteOverview
 
 console = Console()
 
@@ -65,92 +66,14 @@ WEATHER_ICONS = {
 }
 
 
-# ── renderers (return Rich renderables for use with Live) ─────────────
+# ── site detail renderable ────────────────────────────────────────────
 
 
-async def _render_status(client: NepViewer) -> Group:
-    """Build the global status dashboard renderable."""
-    overview, sites, devices = await asyncio.gather(
-        client.get_overview(),
-        client.get_sites(),
-        client.get_devices(),
-    )
-
-    # Header panel
-    prod = overview.production
-    header = Table.grid(padding=(0, 3))
-    header.add_column(style="bold cyan")
-    header.add_column()
-    header.add_row("Current Power", f"[bold yellow]{prod.total_now}[/bold yellow] {prod.total_now_unit}")
-    header.add_row("Today", f"{prod.today} {prod.today_unit}")
-    header.add_row("This Month", f"{prod.month} {prod.month_unit}")
-    header.add_row("This Year", f"{prod.year} {prod.year_unit}")
-    header.add_row("Lifetime", f"[bold]{prod.total}[/bold] {prod.total_unit}")
-    header.add_row("Revenue", f"[green]{prod.total_money}[/green] {prod.total_money_unit}")
-
-    benefit = overview.benefit
-    header.add_row("", "")
-    header.add_row("CO₂ Avoided", f"{benefit.co2} {benefit.co2_unit}")
-    header.add_row("Trees Equivalent", f"{benefit.tree} {benefit.tree_unit}")
-
-    header_panel = Panel(
-        header,
-        title=f"[bold]NEP Solar Dashboard[/bold]  ({overview.site_count} sites, {overview.device_count} devices)",
-        border_style="cyan",
-    )
-
-    # Sites table
-    site_table = Table(title="Sites", show_header=True, header_style="bold")
-    site_table.add_column("Status", width=3, justify="center")
-    site_table.add_column("Name", style="cyan")
-    site_table.add_column("Location")
-    site_table.add_column("Power", justify="right")
-    site_table.add_column("Today", justify="right")
-    site_table.add_column("Lifetime", justify="right")
-    site_table.add_column("Devices", justify="center")
-
-    for s in sites:
-        site_table.add_row(
-            _status_dot(s.is_online),
-            s.site_name,
-            f"{s.city}, {s.country_name}",
-            f"[{_power_color(s.now)}]{s.now}[/] {s.now_unit}",
-            f"{s.today_power} {s.today_power_unit}",
-            f"{s.total_power} {s.total_power_unit}",
-            str(s.sn_count),
-        )
-
-    # Devices table
-    dev_table = Table(title="Devices", show_header=True, header_style="bold")
-    dev_table.add_column("Status", width=3, justify="center")
-    dev_table.add_column("Serial Number", style="cyan")
-    dev_table.add_column("Model")
-    dev_table.add_column("Power", justify="right")
-    dev_table.add_column("Alert")
-    dev_table.add_column("Last Update", style="dim")
-
-    for d in devices:
-        dev_table.add_row(
-            _status_dot(d.is_online),
-            d.sn,
-            d.model_name,
-            f"[{_power_color(d.now)}]{d.now}[/] {d.now_unit}",
-            _alert_text(d.alert_code, d.alert_title),
-            d.last_update_cal,
-        )
-
-    timestamp = Text(f"\n  Last refresh: {datetime.now().strftime('%H:%M:%S')}", style="dim")
-
-    return Group(header_panel, "", site_table, "", dev_table, timestamp)
-
-
-async def _render_site(client: NepViewer, sid: str) -> Group:
-    """Build the detailed single-site view renderable."""
-    overview, modules_data = await asyncio.gather(
-        client.get_site_overview(sid),
-        client.get_site_modules(sid),
-    )
-
+def _build_site_detail(
+    overview: SiteOverview,
+    modules_data: SiteModulesData,
+) -> list[Any]:
+    """Return Rich renderables for a single site's detail section."""
     # Energy flow
     energy = overview.energy
     flow_grid = Table.grid(padding=(0, 2))
@@ -166,7 +89,6 @@ async def _render_site(client: NepViewer, sid: str) -> Group:
     if energy.grid.show:
         direction = "→" if energy.grid.direction == 1 else "←"
         flow_grid.add_row("", f"  {direction}  ", grid_text)
-
     if energy.battery.show:
         batt_text = f"[bold magenta]🔋 Battery[/bold magenta]\n{energy.battery.power} {energy.battery.power_unit}"
         flow_grid.add_row("", "  ↕  ", batt_text)
@@ -183,12 +105,11 @@ async def _render_site(client: NepViewer, sid: str) -> Group:
     prod_table.add_row("Month", f"{prod.month} {prod.month_unit}")
     prod_table.add_row("Year", f"{prod.year} {prod.year_unit}")
     prod_table.add_row("Lifetime", f"[bold]{prod.total}[/bold] {prod.total_unit}")
-
     prod_panel = Panel(prod_table, title="Production", border_style="green")
 
-    # Modules grouped by device
     parts: list[Any] = [Columns([flow_panel, prod_panel], equal=True, expand=True)]
 
+    # Modules grouped by device
     for dev in modules_data.devices:
         status = _status_dot(dev.status == 0)
         table = Table(
@@ -216,26 +137,83 @@ async def _render_site(client: NepViewer, sid: str) -> Group:
                 f"{m.total_power} {m.total_power_unit}",
                 f"[green]OK[/green]" if not alert else alert,
             )
-
         if dev.alert_code and dev.alert_code != "0000":
             table.caption = f"[red]Alert: {dev.alert_title}[/red]"
-
         parts.append("")
         parts.append(table)
 
     # Site-level alert
     if not overview.alert.is_ok:
-        alert_panel = Panel(
+        parts.append("")
+        parts.append(Panel(
             f"[bold red]{overview.alert.title}[/bold red]\n{overview.alert.description}",
             title="⚠ Alert",
             border_style="red",
+        ))
+
+    return parts
+
+
+# ── renderers ─────────────────────────────────────────────────────────
+
+
+async def _render_status(client: NepViewer, site_filter: str | None) -> Group:
+    """Build the full status dashboard.
+
+    If *site_filter* is ``None``, show the global overview header followed
+    by detail for every site.  If a site ID is given, show only that site.
+    """
+    sites = await client.get_sites()
+    if site_filter:
+        sites = [s for s in sites if s.sid == site_filter]
+
+    # When showing all sites, fetch the global overview for the header
+    show_overview = site_filter is None
+    overview = await client.get_overview() if show_overview else None
+
+    # Fetch detail for each site in parallel
+    site_data: list[tuple[str, SiteOverview, SiteModulesData]] = []
+    for s in sites:
+        so, sm = await asyncio.gather(
+            client.get_site_overview(s.sid),
+            client.get_site_modules(s.sid),
         )
-        parts.append("")
-        parts.append(alert_panel)
+        site_data.append((s.site_name, so, sm))
 
-    timestamp = Text(f"\n  Last refresh: {datetime.now().strftime('%H:%M:%S')}  |  Updated: {overview.last_update_cal}", style="dim")
-    parts.append(timestamp)
+    parts: list[Any] = []
 
+    # Global overview header (only when not filtering)
+    if overview is not None:
+        prod = overview.production
+        header = Table.grid(padding=(0, 3))
+        header.add_column(style="bold cyan")
+        header.add_column()
+        header.add_row("Current Power", f"[bold yellow]{prod.total_now}[/bold yellow] {prod.total_now_unit}")
+        header.add_row("Today", f"{prod.today} {prod.today_unit}")
+        header.add_row("This Month", f"{prod.month} {prod.month_unit}")
+        header.add_row("This Year", f"{prod.year} {prod.year_unit}")
+        header.add_row("Lifetime", f"[bold]{prod.total}[/bold] {prod.total_unit}")
+        header.add_row("Revenue", f"[green]{prod.total_money}[/green] {prod.total_money_unit}")
+
+        benefit = overview.benefit
+        header.add_row("", "")
+        header.add_row("CO₂ Avoided", f"{benefit.co2} {benefit.co2_unit}")
+        header.add_row("Trees Equivalent", f"{benefit.tree} {benefit.tree_unit}")
+
+        parts.append(Panel(
+            header,
+            title=f"[bold]NEP Solar Dashboard[/bold]  ({overview.site_count} sites, {overview.device_count} devices)",
+            border_style="cyan",
+        ))
+
+    # Per-site detail sections
+    for name, so, sm in site_data:
+        if len(site_data) > 1 or show_overview:
+            parts.append("")
+            parts.append(Rule(f"[bold]{name}[/bold]"))
+        parts.extend(_build_site_detail(so, sm))
+
+    parts.append(Text(f"\n  Last refresh: {datetime.now().strftime('%H:%M:%S')}", style="dim"))
     return Group(*parts)
 
 
@@ -294,15 +272,12 @@ async def _display(
 
 
 async def _cmd_status(client: NepViewer, args: argparse.Namespace) -> None:
-    await _display(lambda: _render_status(client), watch=args.watch)
-
-
-async def _cmd_site(client: NepViewer, args: argparse.Namespace) -> None:
-    sid = await resolve_sid(client, args.sid)
-    await _display(lambda: _render_site(client, sid), watch=args.watch)
+    site_filter: str | None = args.site
+    await _display(lambda: _render_status(client, site_filter), watch=args.watch)
 
 
 async def _cmd_weather(client: NepViewer, args: argparse.Namespace) -> None:
+    from . import resolve_sid
     sid = await resolve_sid(client, args.sid)
     await _display(lambda: _render_weather(client, sid))
 
@@ -313,24 +288,14 @@ async def _cmd_weather(client: NepViewer, args: argparse.Namespace) -> None:
 def register_dashboard_commands(parent_sub: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
     """Register human-friendly dashboard commands."""
 
-    # status — global overview
     p = parent_sub.add_parser(
         "status",
-        help="Overview of all sites and devices",
+        help="Dashboard with energy flow, production, and panels",
     )
+    p.add_argument("--site", "-s", default=None, metavar="SID", help="Show only this site (default: all)")
     p.add_argument("--watch", "-w", action="store_true", help="Auto-refresh every 5 minutes")
     p.set_defaults(func=_cmd_status)
 
-    # site — detailed single-site view
-    p = parent_sub.add_parser(
-        "site",
-        help="Detailed site view: energy flow, production, panels",
-    )
-    p.add_argument("sid", nargs="?", default=None, help="Site ID (auto-detected if omitted)")
-    p.add_argument("--watch", "-w", action="store_true", help="Auto-refresh every 5 minutes")
-    p.set_defaults(func=_cmd_site)
-
-    # weather
     p = parent_sub.add_parser(
         "weather",
         help="7-day weather forecast for a site",

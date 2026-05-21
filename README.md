@@ -261,11 +261,9 @@ aionepviewer status
 ### Dashboard Commands (Human-Friendly)
 
 ```bash
-aionepviewer status                    # Overview of all sites and devices
+aionepviewer status                    # Full dashboard: overview + all sites with panels
+aionepviewer status --site <sid>       # Dashboard for a specific site only
 aionepviewer status --watch            # Auto-refresh every 5 minutes
-
-aionepviewer site [sid]                # Detailed site view: energy flow, production, panels
-aionepviewer site --watch              # Auto-refresh every 5 minutes
 
 aionepviewer weather [sid]             # 7-day weather forecast with icons
 ```
