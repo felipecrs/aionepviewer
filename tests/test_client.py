@@ -218,9 +218,9 @@ async def test_logout() -> None:
         async with ClientSession() as session:
             client = NepViewer(session, "test@example.com", "password")
             await client.authenticate()
-            assert client._auth.token is not None
+            assert client._auth.token is not None  # noqa: SLF001
             await client.logout()
-            assert client._auth.token is None
+            assert client._auth.token is None  # noqa: SLF001
 
 
 @pytest.mark.asyncio

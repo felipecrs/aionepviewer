@@ -23,7 +23,11 @@ class NepAuth:
     """Handles authentication and signed requests to the NEP API.
 
     This class manages the JWT token lifecycle and provides the low-level
-    ``request`` method used by :class:`~aionepviewer.client.NepViewer`.
+    ``request`` method used by :class:`~aionepviewer.nepviewer.NepViewer`.
+
+    The ``request`` method returns a raw :class:`aiohttp.ClientResponse` so
+    that response parsing stays in the client layer, following Home Assistant
+    API library best practices.
 
     Parameters
     ----------
@@ -78,8 +82,31 @@ class NepAuth:
             If the credentials are rejected.
         """
         body = {"account": self._email, "password": self._password}
-        data = await self._raw_request("POST", "/sign-in", json_body=body, auth=False)
-        auth_data = AuthData.from_api(data)
+        resp = await self._raw_request("POST", "/sign-in", json_body=body, auth=False)
+
+        # sign-in is auth-specific — parse the response inline.
+        if resp.status in (401, 403):
+            raise NepAuthError(
+                f"Authentication failed (HTTP {resp.status})"
+            )
+
+        try:
+            result = await resp.json(content_type=None)
+        except Exception as err:
+            text = await resp.text()
+            raise NepApiError(resp.status, f"Invalid JSON response: {text}") from err
+
+        code = result.get("code", 0)
+        msg = result.get("msg", "")
+
+        if code in (401, 403):
+            raise NepAuthError(f"Authentication failed: {msg}")
+
+        if code != 200:
+            raise NepApiError(code, msg)
+
+        data: dict[str, Any] = result.get("data", {})
+        auth_data = AuthData(data)
         self._token_info = auth_data.token_info
         return auth_data
 
@@ -89,14 +116,19 @@ class NepAuth:
         path: str,
         *,
         json_body: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
+    ) -> aiohttp.ClientResponse:
         """Make an authenticated API request, refreshing the token if needed.
 
-        Returns the ``data`` field from the API response envelope.
+        Returns the raw :class:`aiohttp.ClientResponse`.  The caller is
+        responsible for parsing the response body.
         """
         if not self.is_token_valid:
             await self.sign_in()
         return await self._raw_request(method, path, json_body=json_body, auth=True)
+
+    def clear_token(self) -> None:
+        """Invalidate the stored token."""
+        self._token_info = None
 
     # ------------------------------------------------------------------
     # Internal
@@ -114,7 +146,7 @@ class NepAuth:
         *,
         json_body: dict[str, Any] | None = None,
         auth: bool = True,
-    ) -> dict[str, Any]:
+    ) -> aiohttp.ClientResponse:
         url = f"{self._host}{API_BASE_PATH}{path}"
 
         body_bytes = json.dumps(json_body, separators=(",", ":")).encode() if json_body else b""
@@ -127,7 +159,7 @@ class NepAuth:
             headers["authorization"] = ""
 
         try:
-            resp = await self._session.request(
+            return await self._session.request(
                 method,
                 url,
                 data=body_bytes if body_bytes else None,
@@ -137,31 +169,3 @@ class NepAuth:
             raise NepConnectionError(f"Connection error: {err}") from err
         except TimeoutError as err:
             raise NepTimeoutError(f"Request timed out: {err}") from err
-
-        # Handle HTTP-level 401/403 (e.g. session invalidated by another
-        # device logging in with the same account — the server returns
-        # HTTP 401 with an empty body).
-        if resp.status in (401, 403):
-            self._token_info = None
-            raise NepAuthError(
-                f"Authentication failed (HTTP {resp.status})"
-            )
-
-        try:
-            result = await resp.json(content_type=None)
-        except Exception as err:
-            text = await resp.text()
-            raise NepApiError(resp.status, f"Invalid JSON response: {text}") from err
-
-        code = result.get("code", 0)
-        msg = result.get("msg", "")
-
-        if code == 401 or code == 403:
-            self._token_info = None
-            raise NepAuthError(f"Authentication failed: {msg}")
-
-        if code != 200:
-            raise NepApiError(code, msg)
-
-        data: dict[str, Any] = result.get("data", {})
-        return data

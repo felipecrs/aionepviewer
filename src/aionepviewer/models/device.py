@@ -2,278 +2,446 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
 from .alert import DeviceStatus
 from .energy import EnergyFlow, EnvironmentalBenefit, ProductionStatistics
 
 
-@dataclass(slots=True)
 class Device:
     """A device (gateway/microinverter) from the device list."""
 
-    sid: str
-    sn: str
-    status: int
-    status_title: str
-    alert_code: str
-    alert_title: str
-    alert_description: str
-    model: int
-    model_name: str
-    last_update_time: int
-    last_update: str
-    last_update_cal: str
-    created_at: str
-    site_name: str
-    country: str
-    country_name: str
-    state_name: str
-    city: str
-    street: str
-    user_email: str
-    installer_email: str
-    commission_date: str
-    now: float
-    now_unit: str
-    battery_soc: int
-    wifi_version: str
-    cpu_version: str
-    ram_version: str
-    alias: str
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
+
+    @property
+    def sid(self) -> str:
+        return self.raw_data.get("sid", "")
+
+    @property
+    def sn(self) -> str:
+        return self.raw_data.get("sn", "")
+
+    @property
+    def status(self) -> int:
+        return self.raw_data.get("status", -1)
+
+    @property
+    def status_title(self) -> str:
+        return self.raw_data.get("statusTitle", "offline")
+
+    @property
+    def alert_code(self) -> str:
+        return self.raw_data.get("alertCode", "")
+
+    @property
+    def alert_title(self) -> str:
+        return self.raw_data.get("alertTitle", "")
+
+    @property
+    def alert_description(self) -> str:
+        return self.raw_data.get("alertDescription", "")
+
+    @property
+    def model(self) -> int:
+        return self.raw_data.get("model", 0)
+
+    @property
+    def model_name(self) -> str:
+        return self.raw_data.get("modelName", "")
+
+    @property
+    def last_update_time(self) -> int:
+        return self.raw_data.get("lastUpdateTime", 0)
+
+    @property
+    def last_update(self) -> str:
+        return self.raw_data.get("lastUpdate", "")
+
+    @property
+    def last_update_cal(self) -> str:
+        return self.raw_data.get("lastUpdateCal", "")
+
+    @property
+    def created_at(self) -> str:
+        return self.raw_data.get("createdAt", "")
+
+    @property
+    def site_name(self) -> str:
+        return self.raw_data.get("siteName", "")
+
+    @property
+    def country(self) -> str:
+        return self.raw_data.get("country", "")
+
+    @property
+    def country_name(self) -> str:
+        return self.raw_data.get("countryName", "")
+
+    @property
+    def state_name(self) -> str:
+        return self.raw_data.get("stateName", "")
+
+    @property
+    def city(self) -> str:
+        return self.raw_data.get("city", "")
+
+    @property
+    def street(self) -> str:
+        return self.raw_data.get("street", "")
+
+    @property
+    def user_email(self) -> str:
+        return self.raw_data.get("userEmail", "")
+
+    @property
+    def installer_email(self) -> str:
+        return self.raw_data.get("installerEmail", "")
+
+    @property
+    def commission_date(self) -> str:
+        return self.raw_data.get("commissionDate", "")
+
+    @property
+    def now(self) -> float:
+        return self.raw_data.get("now", 0)
+
+    @property
+    def now_unit(self) -> str:
+        return self.raw_data.get("nowUnit", "W")
+
+    @property
+    def battery_soc(self) -> int:
+        return self.raw_data.get("batterySoc", 0)
+
+    @property
+    def wifi_version(self) -> str:
+        return self.raw_data.get("WIFIVersion", "")
+
+    @property
+    def cpu_version(self) -> str:
+        return self.raw_data.get("CPUVersion", "")
+
+    @property
+    def ram_version(self) -> str:
+        return self.raw_data.get("RAMVersion", "")
+
+    @property
+    def alias(self) -> str:
+        return self.raw_data.get("alias", "")
 
     @property
     def is_online(self) -> bool:
         return self.status == DeviceStatus.ONLINE
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> Device:
-        return cls(
-            sid=data.get("sid", ""),
-            sn=data.get("sn", ""),
-            status=data.get("status", -1),
-            status_title=data.get("statusTitle", "offline"),
-            alert_code=data.get("alertCode", ""),
-            alert_title=data.get("alertTitle", ""),
-            alert_description=data.get("alertDescription", ""),
-            model=data.get("model", 0),
-            model_name=data.get("modelName", ""),
-            last_update_time=data.get("lastUpdateTime", 0),
-            last_update=data.get("lastUpdate", ""),
-            last_update_cal=data.get("lastUpdateCal", ""),
-            created_at=data.get("createdAt", ""),
-            site_name=data.get("siteName", ""),
-            country=data.get("country", ""),
-            country_name=data.get("countryName", ""),
-            state_name=data.get("stateName", ""),
-            city=data.get("city", ""),
-            street=data.get("street", ""),
-            user_email=data.get("userEmail", ""),
-            installer_email=data.get("installerEmail", ""),
-            commission_date=data.get("commissionDate", ""),
-            now=data.get("now", 0),
-            now_unit=data.get("nowUnit", "W"),
-            battery_soc=data.get("batterySoc", 0),
-            wifi_version=data.get("WIFIVersion", ""),
-            cpu_version=data.get("CPUVersion", ""),
-            ram_version=data.get("RAMVersion", ""),
-            alias=data.get("alias", ""),
-        )
 
-
-@dataclass(slots=True)
 class DeviceDetail:
     """Detailed device information."""
 
-    sid: str
-    sn: str
-    model_int: int
-    model: str
-    version: str
-    model_title: str
-    site_name: str
-    country_name: str
-    timezone: str
-    user_email: str
-    installer_email: str
-    register_date: str
-    is_commission: bool
-    commission_date: str
-    time: int
-    temperature_unit: str
-    currency_unit: str
-    local_electric_price: float
-    logo_full_path: str
-    power_max: float
-    country_code: str
-    latitude: float
-    longitude: float
-    street: str
-    city: str
-    state_name: str
-    wifi_version: str
-    cpu_version: str
-    ram_version: str
-    alias: str
-    connection_type: str
-    system_type: int
-    power_rating: float
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> DeviceDetail:
-        return cls(
-            sid=data.get("sid", ""),
-            sn=data.get("sn", ""),
-            model_int=data.get("model_int", 0),
-            model=data.get("model", ""),
-            version=data.get("version", ""),
-            model_title=data.get("modelTitle", ""),
-            site_name=data.get("siteName", ""),
-            country_name=data.get("countryName", ""),
-            timezone=data.get("timezone", ""),
-            user_email=data.get("userEmail", ""),
-            installer_email=data.get("installerEmail", ""),
-            register_date=data.get("registerDate", ""),
-            is_commission=data.get("isCommission", False),
-            commission_date=data.get("commissionDate", ""),
-            time=data.get("time", 0),
-            temperature_unit=data.get("temperatureUnit", "Celsius"),
-            currency_unit=data.get("currency_unit", ""),
-            local_electric_price=data.get("local_electric_price", 0),
-            logo_full_path=data.get("logoFullPath", ""),
-            power_max=data.get("powerMax", 0),
-            country_code=data.get("countryCode", ""),
-            latitude=data.get("latitude", 0),
-            longitude=data.get("longitude", 0),
-            street=data.get("street", ""),
-            city=data.get("city", ""),
-            state_name=data.get("stateName", ""),
-            wifi_version=data.get("wifiVersion", ""),
-            cpu_version=data.get("cpuVersion", ""),
-            ram_version=data.get("ramVersion", ""),
-            alias=data.get("alias", ""),
-            connection_type=data.get("connectionType", ""),
-            system_type=data.get("systemType", 0),
-            power_rating=data.get("powerRating", 0),
-        )
+    @property
+    def sid(self) -> str:
+        return self.raw_data.get("sid", "")
+
+    @property
+    def sn(self) -> str:
+        return self.raw_data.get("sn", "")
+
+    @property
+    def model_int(self) -> int:
+        return self.raw_data.get("model_int", 0)
+
+    @property
+    def model(self) -> str:
+        return self.raw_data.get("model", "")
+
+    @property
+    def version(self) -> str:
+        return self.raw_data.get("version", "")
+
+    @property
+    def model_title(self) -> str:
+        return self.raw_data.get("modelTitle", "")
+
+    @property
+    def site_name(self) -> str:
+        return self.raw_data.get("siteName", "")
+
+    @property
+    def country_name(self) -> str:
+        return self.raw_data.get("countryName", "")
+
+    @property
+    def timezone(self) -> str:
+        return self.raw_data.get("timezone", "")
+
+    @property
+    def user_email(self) -> str:
+        return self.raw_data.get("userEmail", "")
+
+    @property
+    def installer_email(self) -> str:
+        return self.raw_data.get("installerEmail", "")
+
+    @property
+    def register_date(self) -> str:
+        return self.raw_data.get("registerDate", "")
+
+    @property
+    def is_commission(self) -> bool:
+        return self.raw_data.get("isCommission", False)
+
+    @property
+    def commission_date(self) -> str:
+        return self.raw_data.get("commissionDate", "")
+
+    @property
+    def time(self) -> int:
+        return self.raw_data.get("time", 0)
+
+    @property
+    def temperature_unit(self) -> str:
+        return self.raw_data.get("temperatureUnit", "Celsius")
+
+    @property
+    def currency_unit(self) -> str:
+        return self.raw_data.get("currency_unit", "")
+
+    @property
+    def local_electric_price(self) -> float:
+        return self.raw_data.get("local_electric_price", 0)
+
+    @property
+    def logo_full_path(self) -> str:
+        return self.raw_data.get("logoFullPath", "")
+
+    @property
+    def power_max(self) -> float:
+        return self.raw_data.get("powerMax", 0)
+
+    @property
+    def country_code(self) -> str:
+        return self.raw_data.get("countryCode", "")
+
+    @property
+    def latitude(self) -> float:
+        return self.raw_data.get("latitude", 0)
+
+    @property
+    def longitude(self) -> float:
+        return self.raw_data.get("longitude", 0)
+
+    @property
+    def street(self) -> str:
+        return self.raw_data.get("street", "")
+
+    @property
+    def city(self) -> str:
+        return self.raw_data.get("city", "")
+
+    @property
+    def state_name(self) -> str:
+        return self.raw_data.get("stateName", "")
+
+    @property
+    def wifi_version(self) -> str:
+        return self.raw_data.get("wifiVersion", "")
+
+    @property
+    def cpu_version(self) -> str:
+        return self.raw_data.get("cpuVersion", "")
+
+    @property
+    def ram_version(self) -> str:
+        return self.raw_data.get("ramVersion", "")
+
+    @property
+    def alias(self) -> str:
+        return self.raw_data.get("alias", "")
+
+    @property
+    def connection_type(self) -> str:
+        return self.raw_data.get("connectionType", "")
+
+    @property
+    def system_type(self) -> int:
+        return self.raw_data.get("systemType", 0)
+
+    @property
+    def power_rating(self) -> float:
+        return self.raw_data.get("powerRating", 0)
 
 
-@dataclass(slots=True)
 class DeviceStatisticsOverview:
     """Device statistics overview including production, benefit, and energy flow."""
 
-    max_now: int
-    total_now: float
-    total_now_unit: str
-    currency_unit: str
-    local_electric_price: float
-    production: ProductionStatistics
-    environmental_benefit: EnvironmentalBenefit
-    status: int
-    status_title: str
-    alert_code: str
-    alert_title: str
-    alert_description: str
-    last_update: str
-    last_update_cal: str
-    last_update_time: int
-    is_consumption: bool
-    energy: EnergyFlow
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
+
+    @property
+    def max_now(self) -> int:
+        return self.raw_data.get("maxNow", 0)
+
+    @property
+    def total_now(self) -> float:
+        return self.raw_data.get("totalNow", 0)
+
+    @property
+    def total_now_unit(self) -> str:
+        return self.raw_data.get("totalNowUnit", "W")
+
+    @property
+    def currency_unit(self) -> str:
+        return self.raw_data.get("currency_unit", "")
+
+    @property
+    def local_electric_price(self) -> float:
+        return self.raw_data.get("local_electric_price", 0)
+
+    @property
+    def production(self) -> ProductionStatistics:
+        return ProductionStatistics(self.raw_data.get("production", {}))
+
+    @property
+    def environmental_benefit(self) -> EnvironmentalBenefit:
+        return EnvironmentalBenefit(self.raw_data.get("environmentalBenefit", {}))
+
+    @property
+    def status(self) -> int:
+        return self.raw_data.get("status", -1)
+
+    @property
+    def status_title(self) -> str:
+        return self.raw_data.get("statusTitle", "offline")
+
+    @property
+    def alert_code(self) -> str:
+        return self.raw_data.get("alertCode", "")
+
+    @property
+    def alert_title(self) -> str:
+        return self.raw_data.get("alertTitle", "")
+
+    @property
+    def alert_description(self) -> str:
+        return self.raw_data.get("alertDescription", "")
+
+    @property
+    def last_update(self) -> str:
+        return self.raw_data.get("lastUpdate", "")
+
+    @property
+    def last_update_cal(self) -> str:
+        return self.raw_data.get("lastUpdateCal", "")
+
+    @property
+    def last_update_time(self) -> int:
+        return self.raw_data.get("lastUpdateTime", 0)
+
+    @property
+    def is_consumption(self) -> bool:
+        return self.raw_data.get("isConsumption", False)
+
+    @property
+    def energy(self) -> EnergyFlow:
+        return EnergyFlow(self.raw_data.get("energy", {}))
 
     @property
     def is_online(self) -> bool:
         return self.status == DeviceStatus.ONLINE
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> DeviceStatisticsOverview:
-        return cls(
-            max_now=data.get("maxNow", 0),
-            total_now=data.get("totalNow", 0),
-            total_now_unit=data.get("totalNowUnit", "W"),
-            currency_unit=data.get("currency_unit", ""),
-            local_electric_price=data.get("local_electric_price", 0),
-            production=ProductionStatistics.from_api(data.get("production", {})),
-            environmental_benefit=EnvironmentalBenefit.from_api(
-                data.get("environmentalBenefit", {})
-            ),
-            status=data.get("status", -1),
-            status_title=data.get("statusTitle", "offline"),
-            alert_code=data.get("alertCode", ""),
-            alert_title=data.get("alertTitle", ""),
-            alert_description=data.get("alertDescription", ""),
-            last_update=data.get("lastUpdate", ""),
-            last_update_cal=data.get("lastUpdateCal", ""),
-            last_update_time=data.get("lastUpdateTime", 0),
-            is_consumption=data.get("isConsumption", False),
-            energy=EnergyFlow.from_api(data.get("energy", {})),
-        )
 
-
-@dataclass(slots=True)
 class PowerParameter:
     """A power parameter available for a device."""
 
-    name: str
-    unit: str
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> PowerParameter:
-        return cls(name=data["name"], unit=data["unit"])
+    @property
+    def name(self) -> str:
+        return self.raw_data["name"]
+
+    @property
+    def unit(self) -> str:
+        return self.raw_data["unit"]
 
 
-@dataclass(slots=True)
 class DeviceOverviewItem:
     """A device entry within the site overview response."""
 
-    sid: str
-    sn: str
-    model: int
-    model_name: str
-    status: int
-    status_title: str
-    page_type: int
-    now: str
-    today: str
-    now_unit: str
-    today_unit: str
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> DeviceOverviewItem:
-        return cls(
-            sid=data.get("sid", ""),
-            sn=data.get("sn", ""),
-            model=data.get("model", 0),
-            model_name=data.get("modelName", ""),
-            status=data.get("status", -1),
-            status_title=data.get("statusTitle", "offline"),
-            page_type=data.get("pageType", 0),
-            now=data.get("now", "0"),
-            today=data.get("today", "0"),
-            now_unit=data.get("nowUnit", "W"),
-            today_unit=data.get("todayUnit", "kWh"),
-        )
+    @property
+    def sid(self) -> str:
+        return self.raw_data.get("sid", "")
+
+    @property
+    def sn(self) -> str:
+        return self.raw_data.get("sn", "")
+
+    @property
+    def model(self) -> int:
+        return self.raw_data.get("model", 0)
+
+    @property
+    def model_name(self) -> str:
+        return self.raw_data.get("modelName", "")
+
+    @property
+    def status(self) -> int:
+        return self.raw_data.get("status", -1)
+
+    @property
+    def status_title(self) -> str:
+        return self.raw_data.get("statusTitle", "offline")
+
+    @property
+    def page_type(self) -> int:
+        return self.raw_data.get("pageType", 0)
+
+    @property
+    def now(self) -> str:
+        return self.raw_data.get("now", "0")
+
+    @property
+    def today(self) -> str:
+        return self.raw_data.get("today", "0")
+
+    @property
+    def now_unit(self) -> str:
+        return self.raw_data.get("nowUnit", "W")
+
+    @property
+    def today_unit(self) -> str:
+        return self.raw_data.get("todayUnit", "kWh")
 
 
-@dataclass(slots=True)
 class DeviceWifiOta:
     """WiFi firmware OTA status for a device."""
 
-    sn: str
-    wifi_version: str
-    advice: int
-    address: str
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
+
+    @property
+    def sn(self) -> str:
+        return self.raw_data.get("sn", "")
+
+    @property
+    def wifi_version(self) -> str:
+        return self.raw_data.get("wifiVersion", "")
+
+    @property
+    def advice(self) -> int:
+        return self.raw_data.get("advice", 2)
+
+    @property
+    def address(self) -> str:
+        return self.raw_data.get("address", "")
 
     @property
     def update_available(self) -> bool:
         """Return ``True`` if a firmware update is recommended (advice != 2)."""
         return self.advice != 2
-
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> DeviceWifiOta:
-        return cls(
-            sn=data.get("sn", ""),
-            wifi_version=data.get("wifiVersion", ""),
-            advice=data.get("advice", 2),
-            address=data.get("address", ""),
-        )

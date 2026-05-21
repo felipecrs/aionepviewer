@@ -8,7 +8,6 @@ import json
 import os
 import sys
 import tomllib
-from dataclasses import asdict
 from getpass import getpass
 from pathlib import Path
 from typing import Any
@@ -93,13 +92,11 @@ def _resolve_credentials(args: argparse.Namespace) -> tuple[str, str, str]:
 
 
 def dump_json(obj: Any) -> str:
-    """Serialize a dataclass (or list of dataclasses) to indented JSON."""
-    import dataclasses
-
-    if dataclasses.is_dataclass(obj) and not isinstance(obj, type):
-        return json.dumps(asdict(obj), indent=2, default=str)
+    """Serialize a model (or list of models) to indented JSON via raw_data."""
+    if hasattr(obj, "raw_data"):
+        return json.dumps(obj.raw_data, indent=2, default=str)
     if isinstance(obj, list):
-        items = [asdict(o) if dataclasses.is_dataclass(o) and not isinstance(o, type) else o for o in obj]
+        items = [o.raw_data if hasattr(o, "raw_data") else o for o in obj]
         return json.dumps(items, indent=2, default=str)
     return json.dumps(obj, indent=2, default=str)
 

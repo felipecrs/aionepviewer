@@ -2,51 +2,62 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
 
-@dataclass(slots=True)
 class ProductFunction:
     """A capability/function supported by a product."""
 
-    func_id: int
-    func_name: str
-    signal_mqtt: bool
-    signal_bluetooth: bool
-    signal_at: bool
-    signal_ap: bool
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> ProductFunction:
-        return cls(
-            func_id=data.get("func_id", 0),
-            func_name=data.get("func_name", ""),
-            signal_mqtt=data.get("signal_mqtt", False),
-            signal_bluetooth=data.get("signal_bluetooth", False),
-            signal_at=data.get("signal_at", False),
-            signal_ap=data.get("signal_ap", False),
-        )
+    @property
+    def func_id(self) -> int:
+        return self.raw_data.get("func_id", 0)
+
+    @property
+    def func_name(self) -> str:
+        return self.raw_data.get("func_name", "")
+
+    @property
+    def signal_mqtt(self) -> bool:
+        return self.raw_data.get("signal_mqtt", False)
+
+    @property
+    def signal_bluetooth(self) -> bool:
+        return self.raw_data.get("signal_bluetooth", False)
+
+    @property
+    def signal_at(self) -> bool:
+        return self.raw_data.get("signal_at", False)
+
+    @property
+    def signal_ap(self) -> bool:
+        return self.raw_data.get("signal_ap", False)
 
 
-@dataclass(slots=True)
 class ProductInfo:
     """Product information for a device serial number."""
 
-    sn: str
-    model: int
-    model_name: str
-    functions: list[ProductFunction]
-    is_exist: bool
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> ProductInfo:
-        return cls(
-            sn=data.get("sn", ""),
-            model=data.get("model", 0),
-            model_name=data.get("modelName", ""),
-            functions=[
-                ProductFunction.from_api(f) for f in data.get("funcList", [])
-            ],
-            is_exist=data.get("is_exist", False),
-        )
+    @property
+    def sn(self) -> str:
+        return self.raw_data.get("sn", "")
+
+    @property
+    def model(self) -> int:
+        return self.raw_data.get("model", 0)
+
+    @property
+    def model_name(self) -> str:
+        return self.raw_data.get("modelName", "")
+
+    @property
+    def functions(self) -> list[ProductFunction]:
+        return [ProductFunction(f) for f in self.raw_data.get("funcList", [])]
+
+    @property
+    def is_exist(self) -> bool:
+        return self.raw_data.get("is_exist", False)

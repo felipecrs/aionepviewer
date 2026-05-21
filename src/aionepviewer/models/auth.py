@@ -2,133 +2,200 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
 
-@dataclass(slots=True)
 class UserInfo:
     """User information returned after sign-in."""
 
-    uid: str
-    email: str
-    country: str
-    state: str
-    role: int
-    group_id: int
-    group_name: str
-    header_img: str
-    default_area: str
-    company_id: int
-    is_company_owner: int
-    oem_id: int
-    oem_web: str
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> UserInfo:
-        return cls(
-            uid=data["uid"],
-            email=data["email"],
-            country=data.get("country", ""),
-            state=data.get("state", ""),
-            role=data.get("role", 0),
-            group_id=data.get("groupId", 0),
-            group_name=data.get("groupName", ""),
-            header_img=data.get("headerImg", ""),
-            default_area=data.get("defaultArea", ""),
-            company_id=data.get("companyId", 0),
-            is_company_owner=data.get("isCompanyOwner", 0),
-            oem_id=data.get("oemid", 0),
-            oem_web=data.get("oemweb", ""),
-        )
+    @property
+    def uid(self) -> str:
+        return self.raw_data["uid"]
+
+    @property
+    def email(self) -> str:
+        return self.raw_data["email"]
+
+    @property
+    def country(self) -> str:
+        return self.raw_data.get("country", "")
+
+    @property
+    def state(self) -> str:
+        return self.raw_data.get("state", "")
+
+    @property
+    def role(self) -> int:
+        return self.raw_data.get("role", 0)
+
+    @property
+    def group_id(self) -> int:
+        return self.raw_data.get("groupId", 0)
+
+    @property
+    def group_name(self) -> str:
+        return self.raw_data.get("groupName", "")
+
+    @property
+    def header_img(self) -> str:
+        return self.raw_data.get("headerImg", "")
+
+    @property
+    def default_area(self) -> str:
+        return self.raw_data.get("defaultArea", "")
+
+    @property
+    def company_id(self) -> int:
+        return self.raw_data.get("companyId", 0)
+
+    @property
+    def is_company_owner(self) -> int:
+        return self.raw_data.get("isCompanyOwner", 0)
+
+    @property
+    def oem_id(self) -> int:
+        return self.raw_data.get("oemid", 0)
+
+    @property
+    def oem_web(self) -> str:
+        return self.raw_data.get("oemweb", "")
 
 
-@dataclass(slots=True)
 class TokenInfo:
     """JWT token information."""
 
-    token: str
-    expires_at: int
-    duration: int
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> TokenInfo:
-        return cls(
-            token=data["token"],
-            expires_at=data["expiresAt"],
-            duration=data.get("duration", 43200),
-        )
+    @property
+    def token(self) -> str:
+        return self.raw_data["token"]
+
+    @property
+    def expires_at(self) -> int:
+        return self.raw_data["expiresAt"]
+
+    @property
+    def duration(self) -> int:
+        return self.raw_data.get("duration", 43200)
 
 
-@dataclass(slots=True)
 class AuthData:
     """Combined authentication data from sign-in."""
 
-    user_info: UserInfo
-    token_info: TokenInfo
-    site_count: int
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> AuthData:
-        return cls(
-            user_info=UserInfo.from_api(data["userInfo"]),
-            token_info=TokenInfo.from_api(data["tokenInfo"]),
-            site_count=data.get("siteCount", 0),
-        )
+    @property
+    def user_info(self) -> UserInfo:
+        return UserInfo(self.raw_data["userInfo"])
+
+    @property
+    def token_info(self) -> TokenInfo:
+        return TokenInfo(self.raw_data["tokenInfo"])
+
+    @property
+    def site_count(self) -> int:
+        return self.raw_data.get("siteCount", 0)
 
 
-@dataclass(slots=True)
 class AccountInfo:
     """Detailed user account information from /account/info."""
 
-    uid: str
-    email: str
-    user_type: int
-    country_name: str
-    state_name: str
-    country_code: str
-    state_code: str
-    city: str
-    street: str
-    contact_person: str
-    contact_number: str
-    header_img: str
-    full_header_img: str
-    is_auth: bool
-    group_id: int
-    group_name: str
-    parent_id: str
-    parent_email: str
-    company_id: int
-    oem_id: int
-    oem_web: str
-    is_company_owner: int
-    is_black: int
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> AccountInfo:
-        return cls(
-            uid=data.get("uid", ""),
-            email=data.get("email", ""),
-            user_type=data.get("userType", 0),
-            country_name=data.get("countryName", ""),
-            state_name=data.get("stateName", ""),
-            country_code=data.get("countryCode", ""),
-            state_code=data.get("StateCode", ""),
-            city=data.get("city", ""),
-            street=data.get("street", ""),
-            contact_person=data.get("contactPerson", ""),
-            contact_number=data.get("contactNumber", ""),
-            header_img=data.get("headerImg", ""),
-            full_header_img=data.get("fullHeaderImg", ""),
-            is_auth=data.get("is_auth", False),
-            group_id=data.get("groupId", 0),
-            group_name=data.get("groupName", ""),
-            parent_id=data.get("parent_id", ""),
-            parent_email=data.get("parent_email", ""),
-            company_id=data.get("company_id", 0),
-            oem_id=data.get("oemid", 0),
-            oem_web=data.get("oemweb", ""),
-            is_company_owner=data.get("isCompanyOwner", 0),
-            is_black=data.get("isBlack", 0),
-        )
+    @property
+    def uid(self) -> str:
+        return self.raw_data.get("uid", "")
+
+    @property
+    def email(self) -> str:
+        return self.raw_data.get("email", "")
+
+    @property
+    def user_type(self) -> int:
+        return self.raw_data.get("userType", 0)
+
+    @property
+    def country_name(self) -> str:
+        return self.raw_data.get("countryName", "")
+
+    @property
+    def state_name(self) -> str:
+        return self.raw_data.get("stateName", "")
+
+    @property
+    def country_code(self) -> str:
+        return self.raw_data.get("countryCode", "")
+
+    @property
+    def state_code(self) -> str:
+        return self.raw_data.get("StateCode", "")
+
+    @property
+    def city(self) -> str:
+        return self.raw_data.get("city", "")
+
+    @property
+    def street(self) -> str:
+        return self.raw_data.get("street", "")
+
+    @property
+    def contact_person(self) -> str:
+        return self.raw_data.get("contactPerson", "")
+
+    @property
+    def contact_number(self) -> str:
+        return self.raw_data.get("contactNumber", "")
+
+    @property
+    def header_img(self) -> str:
+        return self.raw_data.get("headerImg", "")
+
+    @property
+    def full_header_img(self) -> str:
+        return self.raw_data.get("fullHeaderImg", "")
+
+    @property
+    def is_auth(self) -> bool:
+        return self.raw_data.get("is_auth", False)
+
+    @property
+    def group_id(self) -> int:
+        return self.raw_data.get("groupId", 0)
+
+    @property
+    def group_name(self) -> str:
+        return self.raw_data.get("groupName", "")
+
+    @property
+    def parent_id(self) -> str:
+        return self.raw_data.get("parent_id", "")
+
+    @property
+    def parent_email(self) -> str:
+        return self.raw_data.get("parent_email", "")
+
+    @property
+    def company_id(self) -> int:
+        return self.raw_data.get("company_id", 0)
+
+    @property
+    def oem_id(self) -> int:
+        return self.raw_data.get("oemid", 0)
+
+    @property
+    def oem_web(self) -> str:
+        return self.raw_data.get("oemweb", "")
+
+    @property
+    def is_company_owner(self) -> int:
+        return self.raw_data.get("isCompanyOwner", 0)
+
+    @property
+    def is_black(self) -> int:
+        return self.raw_data.get("isBlack", 0)

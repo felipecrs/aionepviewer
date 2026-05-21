@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from enum import IntEnum
 from typing import Any
 
@@ -24,58 +23,70 @@ class DateStatisticsType(IntEnum):
     MONTH = 2  # Monthly (date format: YYYY-MM)
 
 
-@dataclass(slots=True)
 class ChartSeries:
     """A single data series in a chart."""
 
-    name: str
-    data: list[float | None]
-    stack: str = ""
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> ChartSeries:
-        return cls(
-            name=data.get("name", ""),
-            data=data.get("data", []),
-            stack=data.get("stack", ""),
-        )
+    @property
+    def name(self) -> str:
+        return self.raw_data.get("name", "")
+
+    @property
+    def data(self) -> list[float | None]:
+        return self.raw_data.get("data", [])
+
+    @property
+    def stack(self) -> str:
+        return self.raw_data.get("stack", "")
 
 
-@dataclass(slots=True)
 class ChartData:
     """Chart data from statistics/echarts endpoints."""
 
-    legend: list[str]
-    x_axis_data: list[str]
-    series: list[ChartSeries]
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> ChartData:
-        return cls(
-            legend=data.get("legend", []),
-            x_axis_data=data.get("xAxisData", []),
-            series=[ChartSeries.from_api(s) for s in data.get("series", [])],
-        )
+    @property
+    def legend(self) -> list[str]:
+        return self.raw_data.get("legend", [])
+
+    @property
+    def x_axis_data(self) -> list[str]:
+        return self.raw_data.get("xAxisData", [])
+
+    @property
+    def series(self) -> list[ChartSeries]:
+        return [ChartSeries(s) for s in self.raw_data.get("series", [])]
 
 
-@dataclass(slots=True)
 class DateStatistics:
     """Statistics for a specific date period."""
 
-    power: str
-    consumption: str
-    economic: str
-    power_unit: str
-    consumption_unit: str
-    economic_unit: str
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> DateStatistics:
-        return cls(
-            power=data.get("power", "0"),
-            consumption=data.get("consumption", "0"),
-            economic=data.get("economic", "0"),
-            power_unit=data.get("powerUnit", "kWh"),
-            consumption_unit=data.get("consumptionUnit", "kWh"),
-            economic_unit=data.get("economicUnit", ""),
-        )
+    @property
+    def power(self) -> str:
+        return self.raw_data.get("power", "0")
+
+    @property
+    def consumption(self) -> str:
+        return self.raw_data.get("consumption", "0")
+
+    @property
+    def economic(self) -> str:
+        return self.raw_data.get("economic", "0")
+
+    @property
+    def power_unit(self) -> str:
+        return self.raw_data.get("powerUnit", "kWh")
+
+    @property
+    def consumption_unit(self) -> str:
+        return self.raw_data.get("consumptionUnit", "kWh")
+
+    @property
+    def economic_unit(self) -> str:
+        return self.raw_data.get("economicUnit", "")

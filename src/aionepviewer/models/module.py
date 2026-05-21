@@ -2,98 +2,145 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
 
-@dataclass(slots=True)
 class Module:
     """A single microinverter module (panel-level data)."""
 
-    plc_sn: str
-    addr: int
-    last_update: str
-    last_update_time: int
-    now: float
-    today_power: float
-    total_power: float
-    now_unit: str
-    today_power_unit: str
-    total_power_unit: str
-    version: str
-    status: str
-    page: int
-    model: int
-    model_name: str
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> Module:
-        return cls(
-            plc_sn=data.get("plcSN", ""),
-            addr=data.get("addr", 0),
-            last_update=data.get("lastUpdate", ""),
-            last_update_time=data.get("lastUpdateTime", 0),
-            now=data.get("now", 0),
-            today_power=data.get("todayPower", 0),
-            total_power=data.get("totalPower", 0),
-            now_unit=data.get("nowUnit", "W"),
-            today_power_unit=data.get("todayPowerUnit", "kWh"),
-            total_power_unit=data.get("totalPowerUnit", "kWh"),
-            version=data.get("version", ""),
-            status=data.get("status", "0000"),
-            page=data.get("page", 0),
-            model=data.get("model", 0),
-            model_name=data.get("model_name", "-"),
-        )
+    @property
+    def plc_sn(self) -> str:
+        return self.raw_data.get("plcSN", "")
+
+    @property
+    def addr(self) -> int:
+        return self.raw_data.get("addr", 0)
+
+    @property
+    def last_update(self) -> str:
+        return self.raw_data.get("lastUpdate", "")
+
+    @property
+    def last_update_time(self) -> int:
+        return self.raw_data.get("lastUpdateTime", 0)
+
+    @property
+    def now(self) -> float:
+        return self.raw_data.get("now", 0)
+
+    @property
+    def today_power(self) -> float:
+        return self.raw_data.get("todayPower", 0)
+
+    @property
+    def total_power(self) -> float:
+        return self.raw_data.get("totalPower", 0)
+
+    @property
+    def now_unit(self) -> str:
+        return self.raw_data.get("nowUnit", "W")
+
+    @property
+    def today_power_unit(self) -> str:
+        return self.raw_data.get("todayPowerUnit", "kWh")
+
+    @property
+    def total_power_unit(self) -> str:
+        return self.raw_data.get("totalPowerUnit", "kWh")
+
+    @property
+    def version(self) -> str:
+        return self.raw_data.get("version", "")
+
+    @property
+    def status(self) -> str:
+        return self.raw_data.get("status", "0000")
+
+    @property
+    def page(self) -> int:
+        return self.raw_data.get("page", 0)
+
+    @property
+    def model(self) -> int:
+        return self.raw_data.get("model", 0)
+
+    @property
+    def model_name(self) -> str:
+        return self.raw_data.get("model_name", "-")
 
 
-@dataclass(slots=True)
 class DeviceModules:
     """Modules grouped by gateway/device serial number."""
 
-    sn: str
-    is_phase: bool
-    modules: list[Module]
-    status: int
-    status_title: str
-    alert_code: str
-    alert_title: str
-    model: int
-    model_name: str
-    last_update: str
-    version: str
-    alias: str
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> DeviceModules:
-        return cls(
-            sn=data.get("sn", ""),
-            is_phase=data.get("isPhase", False),
-            modules=[Module.from_api(m) for m in data.get("modules", [])],
-            status=data.get("status", -1),
-            status_title=data.get("statusTitle", "offline"),
-            alert_code=data.get("alertCode", ""),
-            alert_title=data.get("alertTitle", ""),
-            model=data.get("model", 0),
-            model_name=data.get("modelName", ""),
-            last_update=data.get("lastUpdate", ""),
-            version=data.get("version", ""),
-            alias=data.get("alias", ""),
-        )
+    @property
+    def sn(self) -> str:
+        return self.raw_data.get("sn", "")
+
+    @property
+    def is_phase(self) -> bool:
+        return self.raw_data.get("isPhase", False)
+
+    @property
+    def modules(self) -> list[Module]:
+        return [Module(m) for m in self.raw_data.get("modules", [])]
+
+    @property
+    def status(self) -> int:
+        return self.raw_data.get("status", -1)
+
+    @property
+    def status_title(self) -> str:
+        return self.raw_data.get("statusTitle", "offline")
+
+    @property
+    def alert_code(self) -> str:
+        return self.raw_data.get("alertCode", "")
+
+    @property
+    def alert_title(self) -> str:
+        return self.raw_data.get("alertTitle", "")
+
+    @property
+    def model(self) -> int:
+        return self.raw_data.get("model", 0)
+
+    @property
+    def model_name(self) -> str:
+        return self.raw_data.get("modelName", "")
+
+    @property
+    def last_update(self) -> str:
+        return self.raw_data.get("lastUpdate", "")
+
+    @property
+    def version(self) -> str:
+        return self.raw_data.get("version", "")
+
+    @property
+    def alias(self) -> str:
+        return self.raw_data.get("alias", "")
 
 
-@dataclass(slots=True)
 class SiteModulesData:
     """All modules for a site, grouped by device."""
 
-    devices: list[DeviceModules]
-    total_plc: int
-    is_all: bool
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> SiteModulesData:
-        return cls(
-            devices=[DeviceModules.from_api(d) for d in data.get("list", [])],
-            total_plc=data.get("total_plc", 0),
-            is_all=data.get("is_all", True),
-        )
+    @property
+    def devices(self) -> list[DeviceModules]:
+        return [DeviceModules(d) for d in self.raw_data.get("list", [])]
+
+    @property
+    def total_plc(self) -> int:
+        return self.raw_data.get("total_plc", 0)
+
+    @property
+    def is_all(self) -> bool:
+        return self.raw_data.get("is_all", True)

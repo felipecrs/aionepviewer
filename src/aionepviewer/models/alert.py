@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from enum import IntEnum
 from typing import Any
 
@@ -14,24 +13,29 @@ class DeviceStatus(IntEnum):
     OFFLINE = -1
 
 
-@dataclass(slots=True)
 class AlertInfo:
     """Alert information for a device or site."""
 
-    code: str
-    title: str
-    description: str
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
+
+    @property
+    def code(self) -> str:
+        return self.raw_data.get("code", self.raw_data.get("alertCode", "0000"))
+
+    @property
+    def title(self) -> str:
+        return self.raw_data.get("title", self.raw_data.get("alertTitle", "OK"))
+
+    @property
+    def description(self) -> str:
+        return self.raw_data.get(
+            "desc",
+            self.raw_data.get(
+                "description", self.raw_data.get("alertDescription", "")
+            ),
+        )
 
     @property
     def is_ok(self) -> bool:
         return self.code == "0000"
-
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> AlertInfo:
-        return cls(
-            code=data.get("code", data.get("alertCode", "0000")),
-            title=data.get("title", data.get("alertTitle", "OK")),
-            description=data.get(
-                "desc", data.get("description", data.get("alertDescription", ""))
-            ),
-        )

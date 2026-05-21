@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from enum import IntEnum
 from typing import Any
 
@@ -15,35 +14,39 @@ class PlaybackType(IntEnum):
     POWER = 1  # Power playback (5-min intervals, full day)
 
 
-@dataclass(slots=True)
 class PlaybackModule:
     """Per-module playback data (5-min interval power values)."""
 
-    plc_sn: str
-    addr: int
-    data: list[int]
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> PlaybackModule:
-        return cls(
-            plc_sn=data.get("plcSN", ""),
-            addr=data.get("addr", 0),
-            data=data.get("data", []),
-        )
+    @property
+    def plc_sn(self) -> str:
+        return self.raw_data.get("plcSN", "")
+
+    @property
+    def addr(self) -> int:
+        return self.raw_data.get("addr", 0)
+
+    @property
+    def data(self) -> list[int]:
+        return self.raw_data.get("data", [])
 
 
-@dataclass(slots=True)
 class PlaybackData:
     """Device playback data including total power and per-module breakdown."""
 
-    overview: ChartData
-    modules: list[PlaybackModule]
-    unit: str
+    def __init__(self, raw_data: dict[str, Any]) -> None:
+        self.raw_data = raw_data
 
-    @classmethod
-    def from_api(cls, data: dict[str, Any]) -> PlaybackData:
-        return cls(
-            overview=ChartData.from_api(data.get("overview", {})),
-            modules=[PlaybackModule.from_api(m) for m in data.get("modules", [])],
-            unit=data.get("unit", ""),
-        )
+    @property
+    def overview(self) -> ChartData:
+        return ChartData(self.raw_data.get("overview", {}))
+
+    @property
+    def modules(self) -> list[PlaybackModule]:
+        return [PlaybackModule(m) for m in self.raw_data.get("modules", [])]
+
+    @property
+    def unit(self) -> str:
+        return self.raw_data.get("unit", "")

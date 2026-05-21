@@ -8,6 +8,7 @@ import aiohttp
 
 from .auth import NepAuth
 from .const import DEFAULT_HOST
+from .exceptions import NepApiError, NepAuthError
 from .models.auth import AccountInfo, AuthData
 from .models.chart import ChartData, ChartType, DateStatistics, DateStatisticsType
 from .models.device import (
@@ -69,6 +70,48 @@ class NepViewer:
         self._auth = NepAuth(session, email, password, host)
 
     # ------------------------------------------------------------------
+    # Response processing
+    # ------------------------------------------------------------------
+
+    async def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        json_body: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Make an authenticated request and process the response envelope.
+
+        Returns the ``data`` field from the API response envelope.
+        """
+        resp = await self._auth.request(method, path, json_body=json_body)
+
+        if resp.status in (401, 403):
+            self._auth.clear_token()
+            raise NepAuthError(
+                f"Authentication failed (HTTP {resp.status})"
+            )
+
+        try:
+            result = await resp.json(content_type=None)
+        except Exception as err:
+            text = await resp.text()
+            raise NepApiError(resp.status, f"Invalid JSON response: {text}") from err
+
+        code = result.get("code", 0)
+        msg = result.get("msg", "")
+
+        if code in (401, 403):
+            self._auth.clear_token()
+            raise NepAuthError(f"Authentication failed: {msg}")
+
+        if code != 200:
+            raise NepApiError(code, msg)
+
+        data: dict[str, Any] = result.get("data", {})
+        return data
+
+    # ------------------------------------------------------------------
     # Authentication
     # ------------------------------------------------------------------
 
@@ -86,16 +129,16 @@ class NepViewer:
         After calling this, the token is cleared and any subsequent API
         calls will trigger a re-authentication.
         """
-        await self._auth.request("POST", "/account/loginOut")
-        self._auth._token_info = None
+        await self._request("POST", "/account/loginOut")
+        self._auth.clear_token()
 
     async def get_account_info(self) -> AccountInfo:
         """Get detailed profile information for the current user.
 
         Returns contact details, location, group membership, and OEM info.
         """
-        data = await self._auth.request("POST", "/account/info")
-        return AccountInfo.from_api(data)
+        data = await self._request("POST", "/account/info")
+        return AccountInfo(data)
 
     # ------------------------------------------------------------------
     # Global Overview
@@ -103,13 +146,13 @@ class NepViewer:
 
     async def get_overview(self) -> OverviewData:
         """Get the global overview for all sites (production, benefit, counts)."""
-        data = await self._auth.request("POST", "/overview/overview")
-        return OverviewData.from_api(data)
+        data = await self._request("POST", "/overview/overview")
+        return OverviewData(data)
 
     async def get_site_status_counts(self) -> SiteStatusCounts:
         """Get the count of sites by online/offline status."""
-        data = await self._auth.request("POST", "/overview/siteStatusCounts")
-        return SiteStatusCounts.from_api(data)
+        data = await self._request("POST", "/overview/siteStatusCounts")
+        return SiteStatusCounts(data)
 
     # ------------------------------------------------------------------
     # Device List
@@ -163,8 +206,8 @@ class NepViewer:
             },
             "sort": [],
         }
-        data = await self._auth.request("POST", "/device/list", json_body=body)
-        return [Device.from_api(d) for d in data.get("list", [])]
+        data = await self._request("POST", "/device/list", json_body=body)
+        return [Device(d) for d in data.get("list", [])]
 
     # ------------------------------------------------------------------
     # Device Detail & Statistics
@@ -180,20 +223,20 @@ class NepViewer:
         sn:
             Device serial number.
         """
-        data = await self._auth.request(
+        data = await self._request(
             "POST", "/device/detail", json_body={"sid": sid, "sn": sn}
         )
-        return DeviceDetail.from_api(data)
+        return DeviceDetail(data)
 
     async def get_device_statistics_overview(self, sn: str) -> DeviceStatisticsOverview:
         """Get production, benefit, energy flow, and status for a device.
 
         This is the primary endpoint for device-level sensors in Home Assistant.
         """
-        data = await self._auth.request(
+        data = await self._request(
             "POST", "/device/statistics/overview", json_body={"sn": sn}
         )
-        return DeviceStatisticsOverview.from_api(data)
+        return DeviceStatisticsOverview(data)
 
     async def get_device_power_parameters(self, sn: str) -> list[PowerParameter]:
         """Get the list of available power parameters for a device.
@@ -201,10 +244,10 @@ class NepViewer:
         Returns names like "Production", "AC Voltage", "AC Frequency",
         "Temperature", "Power_1", "DC Voltage_1", etc.
         """
-        data = await self._auth.request(
+        data = await self._request(
             "POST", "/device/powerParamateMap", json_body={"sn": sn}
         )
-        return [PowerParameter.from_api(p) for p in data.get("list", [])]
+        return [PowerParameter(p) for p in data.get("list", [])]
 
     async def get_device_statistics_chart(
         self,
@@ -249,10 +292,10 @@ class NepViewer:
             body["minInterval"] = min_interval
             if lines:
                 body["lines"] = lines
-        data = await self._auth.request(
+        data = await self._request(
             "POST", "/device/statistics/echarts", json_body=body
         )
-        return ChartData.from_api(data)
+        return ChartData(data)
 
     async def get_device_date_statistics(
         self,
@@ -271,12 +314,12 @@ class NepViewer:
         date:
             The date string matching the stat_type format.
         """
-        data = await self._auth.request(
+        data = await self._request(
             "POST",
             "/device/statistics/date",
             json_body={"types": int(stat_type), "date": date, "sn": sn},
         )
-        return DateStatistics.from_api(data)
+        return DateStatistics(data)
 
     async def get_device_playback(
         self,
@@ -298,7 +341,7 @@ class NepViewer:
         playback_type:
             The type of playback data.
         """
-        data = await self._auth.request(
+        data = await self._request(
             "POST",
             "/device/playback",
             json_body={
@@ -308,7 +351,7 @@ class NepViewer:
                 "end": end,
             },
         )
-        return PlaybackData.from_api(data)
+        return PlaybackData(data)
 
     # ------------------------------------------------------------------
     # Site List
@@ -354,8 +397,8 @@ class NepViewer:
             },
             "sort": [],
         }
-        data = await self._auth.request("POST", "/site/listWithSN", json_body=body)
-        return [Site.from_api(s) for s in data.get("list", [])]
+        data = await self._request("POST", "/site/listWithSN", json_body=body)
+        return [Site(s) for s in data.get("list", [])]
 
     # ------------------------------------------------------------------
     # Site Detail & Overview
@@ -369,20 +412,20 @@ class NepViewer:
         sid:
             Site ID (e.g. ``"BR_20260317_tXFI"``).
         """
-        data = await self._auth.request(
+        data = await self._request(
             "POST", "/site/detail", json_body={"sid": sid}
         )
-        return SiteDetail.from_api(data)
+        return SiteDetail(data)
 
     async def get_site_overview(self, sid: str) -> SiteOverview:
         """Get the site overview including production, energy flow, and devices.
 
         This is the primary endpoint for site-level sensors in Home Assistant.
         """
-        data = await self._auth.request(
+        data = await self._request(
             "POST", "/site/overview", json_body={"sid": sid}
         )
-        return SiteOverview.from_api(data)
+        return SiteOverview(data)
 
     async def get_site_modules(self, sid: str, page: int = 0) -> SiteModulesData:
         """Get module-level (per-panel) data for a site.
@@ -396,17 +439,17 @@ class NepViewer:
         page:
             Module page number (for sites with many modules).
         """
-        data = await self._auth.request(
+        data = await self._request(
             "POST", "/site/modules", json_body={"sid": sid, "page": page}
         )
-        return SiteModulesData.from_api(data)
+        return SiteModulesData(data)
 
     async def get_site_weather(self, sid: str) -> Weather:
         """Get the 7-day weather forecast for a site."""
-        data = await self._auth.request(
+        data = await self._request(
             "POST", "/site/weather7Day", json_body={"sid": sid}
         )
-        return Weather.from_api(data)
+        return Weather(data)
 
     async def get_site_statistics_chart(
         self,
@@ -439,10 +482,10 @@ class NepViewer:
             body["rangeDate"] = range_date
         if chart_type in (ChartType.DAY, ChartType.INTRADAY_POWER):
             body["weatherHours"] = weather_hours
-        data = await self._auth.request(
+        data = await self._request(
             "POST", "/site/statistics/echarts", json_body=body
         )
-        return ChartData.from_api(data)
+        return ChartData(data)
 
     async def get_site_layout(self, sid: str) -> SiteLayout:
         """Get the layout picture and scale for a site.
@@ -452,10 +495,10 @@ class NepViewer:
         sid:
             Site ID.
         """
-        data = await self._auth.request(
+        data = await self._request(
             "POST", "/site/layoutInfo", json_body={"sid": sid}
         )
-        return SiteLayout.from_api(data)
+        return SiteLayout(data)
 
     # ------------------------------------------------------------------
     # Product Info
@@ -473,10 +516,10 @@ class NepViewer:
         serial_numbers:
             List of device serial numbers to look up.
         """
-        data = await self._auth.request(
+        data = await self._request(
             "POST", "/product/sn/info", json_body={"sn": serial_numbers}
         )
-        return [ProductInfo.from_api(p) for p in data.get("list", [])]
+        return [ProductInfo(p) for p in data.get("list", [])]
 
     # ------------------------------------------------------------------
     # Device WiFi OTA
@@ -499,13 +542,13 @@ class NepViewer:
             OTA info per device, including current version and update advice.
         """
         payload = [{"sn": sn, "wifiVersion": ver} for sn, ver in devices]
-        data = await self._auth.request(
+        data = await self._request(
             "POST", "/device/detailWifiOta", json_body={"wifiSn": payload}
         )
         # Response data is a list directly (not wrapped in a "list" key)
         if isinstance(data, list):
-            return [DeviceWifiOta.from_api(d) for d in data]
-        return [DeviceWifiOta.from_api(d) for d in data.get("list", [])]
+            return [DeviceWifiOta(d) for d in data]
+        return [DeviceWifiOta(d) for d in data.get("list", [])]
 
     async def update_device_wifi_version(
         self, devices: list[tuple[str, str]]
@@ -521,7 +564,7 @@ class NepViewer:
             List of ``(sn, wifi_version)`` tuples.
         """
         payload = [{"sn": sn, "wifiVersion": ver} for sn, ver in devices]
-        await self._auth.request(
+        await self._request(
             "POST", "/device/updateWifiVersion", json_body={"wifiSn": payload}
         )
 
@@ -539,12 +582,12 @@ class NepViewer:
         sn:
             Device serial number.
         """
-        data = await self._auth.request(
+        data = await self._request(
             "POST",
             "/site/sn/report/settings",
             json_body={"sid": sid, "sn": sn},
         )
-        return ReportSettings.from_api(data)
+        return ReportSettings(data)
 
     async def set_report_settings(
         self,
@@ -573,7 +616,7 @@ class NepViewer:
         alert_end:
             Alert monitoring window end hour (24h format string, e.g. ``"17"``).
         """
-        await self._auth.request(
+        await self._request(
             "POST",
             "/site/sn/report/setUp",
             json_body={
