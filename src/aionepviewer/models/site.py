@@ -341,6 +341,10 @@ class SiteDetail:
     def sn_list(self) -> list[dict[str, Any]]:
         return self.raw_data.get("sn", [])
 
+    @property
+    def project_reference_id(self) -> str:
+        return self.raw_data.get("projectReferenceId", "")
+
 
 class SiteOverview:
     """Site overview data including production, benefit, energy flow, devices."""
