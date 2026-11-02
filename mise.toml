@@ -21,12 +21,4 @@ run = "uv run mypy src/ tests/"
 description = "Build package distributions"
 run = "uv build"
 
-[tasks.release]
-description = "Run semantic-release version"
-run = "uv run semantic-release version"
-
-[tasks.publish]
-description = "Publish assets with semantic-release"
-run = "uv run semantic-release publish"
-
 
