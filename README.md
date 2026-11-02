@@ -135,68 +135,68 @@ Main client class.
 
 #### Authentication and account
 
-| Method | Description |
-|---|---|
-| `authenticate()` | Sign in and return `AuthData` (user info + token) |
-| `logout()` | Explicitly log out and invalidate the session token |
-| `get_account_info()` | Get detailed user profile (`AccountInfo`) |
+| Method               | Description                                         |
+| -------------------- | --------------------------------------------------- |
+| `authenticate()`     | Sign in and return `AuthData` (user info + token)   |
+| `logout()`           | Explicitly log out and invalidate the session token |
+| `get_account_info()` | Get detailed user profile (`AccountInfo`)           |
 
 #### Global overview
 
-| Method | Description |
-|---|---|
-| `get_overview()` | Global production, benefit, and device counts |
-| `get_site_status_counts()` | Online/offline site counts |
+| Method                     | Description                                   |
+| -------------------------- | --------------------------------------------- |
+| `get_overview()`           | Global production, benefit, and device counts |
+| `get_site_status_counts()` | Online/offline site counts                    |
 
 #### Sites
 
-| Method | Description |
-|---|---|
-| `get_sites(...)` | List all sites with device summaries |
-| `get_site_detail(sid)` | Full site info (location, timezone, panels, pricing) |
-| `get_site_overview(sid)` | Production stats, energy flow, device list, alerts |
-| `get_site_modules(sid)` | Per-panel module data grouped by device |
-| `get_site_weather(sid)` | 7-day weather forecast |
-| `get_site_statistics_chart(sid, chart_type, ...)` | Chart data (intraday, daily, monthly, yearly) |
+| Method                                            | Description                                          |
+| ------------------------------------------------- | ---------------------------------------------------- |
+| `get_sites(...)`                                  | List all sites with device summaries                 |
+| `get_site_detail(sid)`                            | Full site info (location, timezone, panels, pricing) |
+| `get_site_overview(sid)`                          | Production stats, energy flow, device list, alerts   |
+| `get_site_modules(sid)`                           | Per-panel module data grouped by device              |
+| `get_site_weather(sid)`                           | 7-day weather forecast                               |
+| `get_site_statistics_chart(sid, chart_type, ...)` | Chart data (intraday, daily, monthly, yearly)        |
 
 #### Devices
 
-| Method | Description |
-|---|---|
-| `get_devices(...)` | List all devices with status and power |
-| `get_device_detail(sid, sn)` | Full device info |
-| `get_device_statistics_overview(sn)` | Production, benefit, energy flow, alerts |
-| `get_device_power_parameters(sn)` | Available parameters (voltage, frequency, temperature, per-channel) |
-| `get_device_statistics_chart(sn, chart_type, ...)` | Chart data |
-| `get_device_date_statistics(sn, stat_type, date)` | Power/consumption/economic for a period |
-| `get_device_playback(sn, start, end)` | 5-min interval data with per-module breakdown |
+| Method                                             | Description                                                         |
+| -------------------------------------------------- | ------------------------------------------------------------------- |
+| `get_devices(...)`                                 | List all devices with status and power                              |
+| `get_device_detail(sid, sn)`                       | Full device info                                                    |
+| `get_device_statistics_overview(sn)`               | Production, benefit, energy flow, alerts                            |
+| `get_device_power_parameters(sn)`                  | Available parameters (voltage, frequency, temperature, per-channel) |
+| `get_device_statistics_chart(sn, chart_type, ...)` | Chart data                                                          |
+| `get_device_date_statistics(sn, stat_type, date)`  | Power/consumption/economic for a period                             |
+| `get_device_playback(sn, start, end)`              | 5-min interval data with per-module breakdown                       |
 
 #### Report settings
 
-| Method | Description |
-|---|---|
-| `get_report_settings(sid, sn)` | Get email report notification settings for a device |
+| Method                         | Description                                                    |
+| ------------------------------ | -------------------------------------------------------------- |
+| `get_report_settings(sid, sn)` | Get email report notification settings for a device            |
 | `set_report_settings(sn, ...)` | Configure daily/weekly/monthly email reports and alert windows |
 
 ### Chart types
 
-| `ChartType` | Description |
-|---|---|
-| `DAY` (1) | Intraday data with configurable interval and parameter lines |
-| `DAILY` (3) | Daily bars within a date range (`"YYYY-MM-DD~YYYY-MM-DD"`) |
-| `MONTHLY` (5) | Monthly bars |
-| `YEARLY` (6) | Yearly data (months on x-axis) |
-| `INTRADAY_POWER` (11) | Intraday AC output power (15-min intervals) |
+| `ChartType`           | Description                                                  |
+| --------------------- | ------------------------------------------------------------ |
+| `DAY` (1)             | Intraday data with configurable interval and parameter lines |
+| `DAILY` (3)           | Daily bars within a date range (`"YYYY-MM-DD~YYYY-MM-DD"`)   |
+| `MONTHLY` (5)         | Monthly bars                                                 |
+| `YEARLY` (6)          | Yearly data (months on x-axis)                               |
+| `INTRADAY_POWER` (11) | Intraday AC output power (15-min intervals)                  |
 
 ### Exceptions
 
-| Exception | Description |
-|---|---|
-| `NepError` | Base exception |
-| `NepAuthError` | Authentication failure (invalid credentials or expired token) |
-| `NepConnectionError` | Network connectivity issue |
-| `NepTimeoutError` | Request timed out |
-| `NepApiError` | API returned a non-200 code (has `.code` and `.message`) |
+| Exception            | Description                                                   |
+| -------------------- | ------------------------------------------------------------- |
+| `NepError`           | Base exception                                                |
+| `NepAuthError`       | Authentication failure (invalid credentials or expired token) |
+| `NepConnectionError` | Network connectivity issue                                    |
+| `NepTimeoutError`    | Request timed out                                             |
+| `NepApiError`        | API returned a non-200 code (has `.code` and `.message`)      |
 
 ## CLI
 
@@ -216,11 +216,11 @@ aionepviewer configure
 
 This creates a TOML config file at the standard user config location:
 
-| OS | Path |
-|---|---|
-| Linux | `~/.config/aionepviewer/config.toml` |
-| macOS | `~/Library/Application Support/aionepviewer/config.toml` |
-| Windows | `%APPDATA%\aionepviewer\config.toml` (Roaming) |
+| OS      | Path                                                     |
+| ------- | -------------------------------------------------------- |
+| Linux   | `~/.config/aionepviewer/config.toml`                     |
+| macOS   | `~/Library/Application Support/aionepviewer/config.toml` |
+| Windows | `%APPDATA%\aionepviewer\config.toml` (Roaming)           |
 
 You can also check the path with `aionepviewer config-path`.
 
