@@ -9,7 +9,6 @@ from ..models.chart import ChartType, DateStatisticsType
 from ..nepviewer import NepViewer
 from . import dump_json
 
-
 # ── handlers ───────────────────────────────────────────────────────────
 
 
@@ -62,11 +61,16 @@ async def _site_layout(client: NepViewer, args: argparse.Namespace) -> None:
 
 async def _site_chart(client: NepViewer, args: argparse.Namespace) -> None:
     chart_type = ChartType(args.type)
-    print(dump_json(
-        await client.get_site_statistics_chart(
-            args.sid, chart_type, date=args.date, range_date=args.range_date,
+    print(
+        dump_json(
+            await client.get_site_statistics_chart(
+                args.sid,
+                chart_type,
+                date=args.date,
+                range_date=args.range_date,
+            )
         )
-    ))
+    )
 
 
 async def _devices(client: NepViewer, _args: argparse.Namespace) -> None:
@@ -87,17 +91,26 @@ async def _device_params(client: NepViewer, args: argparse.Namespace) -> None:
 
 async def _device_chart(client: NepViewer, args: argparse.Namespace) -> None:
     chart_type = ChartType(args.type)
-    print(dump_json(
-        await client.get_device_statistics_chart(
-            args.sn, chart_type, date=args.date, lines=args.lines or [],
+    print(
+        dump_json(
+            await client.get_device_statistics_chart(
+                args.sn,
+                chart_type,
+                date=args.date,
+                lines=args.lines or [],
+            )
         )
-    ))
+    )
 
 
 async def _device_energy(client: NepViewer, args: argparse.Namespace) -> None:
     date_str: str = args.date
-    stat_type = DateStatisticsType.MONTH if len(date_str) == 7 else DateStatisticsType.DAY
-    print(dump_json(await client.get_device_date_statistics(args.sn, stat_type, date_str)))
+    stat_type = (
+        DateStatisticsType.MONTH if len(date_str) == 7 else DateStatisticsType.DAY
+    )
+    print(
+        dump_json(await client.get_device_date_statistics(args.sn, stat_type, date_str))
+    )
 
 
 async def _device_playback(client: NepViewer, args: argparse.Namespace) -> None:
@@ -184,9 +197,16 @@ def register_api_commands(parent_sub: argparse._SubParsersAction) -> None:  # ty
 
     p = sub.add_parser("site-chart", help="Site chart data")
     p.add_argument("sid", help="Site ID")
-    p.add_argument("--type", type=int, required=True, help="ChartType (1=day, 3=daily, 5=monthly, 6=yearly, 11=intraday)")
+    p.add_argument(
+        "--type",
+        type=int,
+        required=True,
+        help="ChartType (1=day, 3=daily, 5=monthly, 6=yearly, 11=intraday)",
+    )
     p.add_argument("--date", default=date.today().isoformat(), help="Date (YYYY-MM-DD)")
-    p.add_argument("--range-date", default="", help="Date range (YYYY-MM-DD~YYYY-MM-DD)")
+    p.add_argument(
+        "--range-date", default="", help="Date range (YYYY-MM-DD~YYYY-MM-DD)"
+    )
     p.set_defaults(func=_site_chart)
 
     # devices
@@ -208,7 +228,12 @@ def register_api_commands(parent_sub: argparse._SubParsersAction) -> None:  # ty
 
     p = sub.add_parser("device-chart", help="Device chart data")
     p.add_argument("sn", help="Device serial number")
-    p.add_argument("--type", type=int, required=True, help="ChartType (1=day, 3=daily, 5=monthly, 6=yearly, 11=intraday)")
+    p.add_argument(
+        "--type",
+        type=int,
+        required=True,
+        help="ChartType (1=day, 3=daily, 5=monthly, 6=yearly, 11=intraday)",
+    )
     p.add_argument("--date", default=date.today().isoformat(), help="Date (YYYY-MM-DD)")
     p.add_argument("--lines", nargs="*", default=[], help="Parameter line names")
     p.set_defaults(func=_device_chart)
@@ -242,6 +267,10 @@ def register_api_commands(parent_sub: argparse._SubParsersAction) -> None:  # ty
     p.add_argument("--daily", action="store_true", help="Enable daily reports")
     p.add_argument("--weekly", action="store_true", help="Enable weekly reports")
     p.add_argument("--monthly", action="store_true", help="Enable monthly reports")
-    p.add_argument("--alert-start", default="8", help="Alert window start hour (default: 8)")
-    p.add_argument("--alert-end", default="17", help="Alert window end hour (default: 17)")
+    p.add_argument(
+        "--alert-start", default="8", help="Alert window start hour (default: 8)"
+    )
+    p.add_argument(
+        "--alert-end", default="17", help="Alert window end hour (default: 17)"
+    )
     p.set_defaults(func=_report_setup)

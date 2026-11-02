@@ -8,28 +8,15 @@ from aionepviewer.models import (
     ChartData,
     DateStatistics,
     Device,
-    DeviceDetail,
-    DeviceModules,
-    DeviceStatisticsOverview,
     DeviceWifiOta,
     EnergyFlow,
-    EnvironmentalBenefit,
     Module,
-    OverviewData,
     PlaybackData,
-    PlaybackModule,
-    PowerParameter,
-    ProductFunction,
     ProductInfo,
-    ProductionStatistics,
     Site,
-    SiteDetail,
     SiteLayout,
-    SiteModulesData,
-    SiteOverview,
     SiteStatusCounts,
     Weather,
-    WeatherDay,
 )
 
 
@@ -196,11 +183,46 @@ class TestModule:
 class TestEnergyFlow:
     def test_from_dict(self) -> None:
         raw = {
-            "PVPanel": {"power": 1000, "powerUnit": "W", "direction": 1, "show": True, "rate": 0, "showPower": True},
-            "home": {"power": 1000, "powerUnit": "W", "direction": 2, "show": True, "rate": 0, "showPower": False},
-            "grid": {"power": 0, "powerUnit": "W", "direction": 0, "show": True, "rate": 0, "showPower": False},
-            "battery": {"power": 0, "powerUnit": "W", "direction": 0, "show": False, "rate": 0, "showPower": False},
-            "gen": {"power": 0, "powerUnit": "W", "direction": 0, "show": False, "rate": 0, "showPower": False},
+            "PVPanel": {
+                "power": 1000,
+                "powerUnit": "W",
+                "direction": 1,
+                "show": True,
+                "rate": 0,
+                "showPower": True,
+            },
+            "home": {
+                "power": 1000,
+                "powerUnit": "W",
+                "direction": 2,
+                "show": True,
+                "rate": 0,
+                "showPower": False,
+            },
+            "grid": {
+                "power": 0,
+                "powerUnit": "W",
+                "direction": 0,
+                "show": True,
+                "rate": 0,
+                "showPower": False,
+            },
+            "battery": {
+                "power": 0,
+                "powerUnit": "W",
+                "direction": 0,
+                "show": False,
+                "rate": 0,
+                "showPower": False,
+            },
+            "gen": {
+                "power": 0,
+                "powerUnit": "W",
+                "direction": 0,
+                "show": False,
+                "rate": 0,
+                "showPower": False,
+            },
         }
         energy = EnergyFlow(raw)
         assert energy.pv_panel.power == 1000
@@ -214,7 +236,9 @@ class TestAlertInfo:
         assert alert.is_ok is True
 
     def test_not_ok(self) -> None:
-        alert = AlertInfo({"code": "0040", "title": "AC voltage RMS over", "desc": "unstable"})
+        alert = AlertInfo(
+            {"code": "0040", "title": "AC voltage RMS over", "desc": "unstable"}
+        )
         assert alert.is_ok is False
 
 
@@ -349,7 +373,9 @@ class TestDeviceWifiOta:
         assert ota.update_available is False
 
     def test_update_available(self) -> None:
-        ota = DeviceWifiOta({"sn": "ABC", "wifiVersion": "1.0", "advice": 1, "address": "http://fw.bin"})
+        ota = DeviceWifiOta(
+            {"sn": "ABC", "wifiVersion": "1.0", "advice": 1, "address": "http://fw.bin"}
+        )
         assert ota.update_available is True
 
 

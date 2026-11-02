@@ -36,6 +36,7 @@ dev = [
     "aioresponses>=0.7",
     "mypy>=1.10",
     "python-semantic-release>=10.7",
+    "ruff>=0.17.3",
 ]
 
 [project.scripts]
@@ -62,6 +63,14 @@ mypy_path = "src/"
 [[tool.mypy.overrides]]
 module = "aionepviewer.models.*"
 warn_return_any = false
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+ignore = [
+    "RUF022",
+]
 
 [tool.semantic_release]
 version_toml = [
