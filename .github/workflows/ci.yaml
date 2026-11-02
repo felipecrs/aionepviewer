@@ -25,12 +25,11 @@ jobs:
 
     env:
       MISE_PYTHON_VERSION: ${{ matrix.python-version }}
+      MISE_AUTO_INSTALL: "false"
 
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v4
-        env:
-          MISE_PYTHON_VERSION: ${{ matrix.python-version }}
         with:
           version: 2026.10.25
           cache_key: '{{ default }}-python${{ matrix.python-version }}'
