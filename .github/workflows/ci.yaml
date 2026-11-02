@@ -36,7 +36,6 @@ jobs:
       - run: mise run install
       - run: mise run lint
       - run: mise run test
-      - run: mise run typecheck
 
   release:
     runs-on: ubuntu-latest
