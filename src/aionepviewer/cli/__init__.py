@@ -16,9 +16,9 @@ import aiohttp
 import tomli_w
 from platformdirs import user_config_path
 
-from ..nepviewer import NepViewer
 from ..const import DEFAULT_HOST
 from ..exceptions import NepAuthError, NepError
+from ..nepviewer import NepViewer
 
 APP_NAME = "aionepviewer"
 
@@ -224,8 +224,10 @@ async def _cmd_config_path(_client: Any, _args: argparse.Namespace) -> None:
     exists = path.exists()
     print(str(path))
     if not exists:
-        print("(file does not exist yet; run 'aionepviewer configure' to create it)",
-              file=sys.stderr)
+        print(
+            "(file does not exist yet; run 'aionepviewer configure' to create it)",
+            file=sys.stderr,
+        )
 
 
 # ── main entry ─────────────────────────────────────────────────────────

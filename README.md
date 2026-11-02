@@ -50,6 +50,7 @@ import asyncio
 import aiohttp
 from aionepviewer import NepViewer
 
+
 async def main():
     async with aiohttp.ClientSession() as session:
         client = NepViewer(session, "your-email@example.com", "your-password")
@@ -79,6 +80,7 @@ async def main():
                 for module in device.modules:
                     print(f"    Panel {module.plc_sn}: {module.now} {module.now_unit}")
 
+
 asyncio.run(main())
 ```
 
@@ -89,6 +91,7 @@ Pass Home Assistant's shared `aiohttp.ClientSession` when creating the client:
 ```python
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from aionepviewer import NepViewer, NepAuthError
+
 
 async def async_setup_entry(hass, entry):
     session = async_get_clientsession(hass)

@@ -88,9 +88,7 @@ class NepViewer:
 
         if resp.status in (401, 403):
             self._auth.clear_token()
-            raise NepAuthError(
-                f"Authentication failed (HTTP {resp.status})"
-            )
+            raise NepAuthError(f"Authentication failed (HTTP {resp.status})")
 
         try:
             result = await resp.json(content_type=None)
@@ -292,9 +290,7 @@ class NepViewer:
             body["minInterval"] = min_interval
             if lines:
                 body["lines"] = lines
-        data = await self._request(
-            "POST", "/device/statistics/echarts", json_body=body
-        )
+        data = await self._request("POST", "/device/statistics/echarts", json_body=body)
         return ChartData(data)
 
     async def get_device_date_statistics(
@@ -412,9 +408,7 @@ class NepViewer:
         sid:
             Site ID (e.g. ``"BR_20260317_tXFI"``).
         """
-        data = await self._request(
-            "POST", "/site/detail", json_body={"sid": sid}
-        )
+        data = await self._request("POST", "/site/detail", json_body={"sid": sid})
         return SiteDetail(data)
 
     async def get_site_overview(self, sid: str) -> SiteOverview:
@@ -422,9 +416,7 @@ class NepViewer:
 
         This is the primary endpoint for site-level sensors in Home Assistant.
         """
-        data = await self._request(
-            "POST", "/site/overview", json_body={"sid": sid}
-        )
+        data = await self._request("POST", "/site/overview", json_body={"sid": sid})
         return SiteOverview(data)
 
     async def get_site_modules(self, sid: str, page: int = 0) -> SiteModulesData:
@@ -446,9 +438,7 @@ class NepViewer:
 
     async def get_site_weather(self, sid: str) -> Weather:
         """Get the 7-day weather forecast for a site."""
-        data = await self._request(
-            "POST", "/site/weather7Day", json_body={"sid": sid}
-        )
+        data = await self._request("POST", "/site/weather7Day", json_body={"sid": sid})
         return Weather(data)
 
     async def get_site_statistics_chart(
@@ -482,9 +472,7 @@ class NepViewer:
             body["rangeDate"] = range_date
         if chart_type in (ChartType.DAY, ChartType.INTRADAY_POWER):
             body["weatherHours"] = weather_hours
-        data = await self._request(
-            "POST", "/site/statistics/echarts", json_body=body
-        )
+        data = await self._request("POST", "/site/statistics/echarts", json_body=body)
         return ChartData(data)
 
     async def get_site_layout(self, sid: str) -> SiteLayout:
@@ -495,9 +483,7 @@ class NepViewer:
         sid:
             Site ID.
         """
-        data = await self._request(
-            "POST", "/site/layoutInfo", json_body={"sid": sid}
-        )
+        data = await self._request("POST", "/site/layoutInfo", json_body={"sid": sid})
         return SiteLayout(data)
 
     # ------------------------------------------------------------------
@@ -550,9 +536,7 @@ class NepViewer:
             return [DeviceWifiOta(d) for d in data]
         return [DeviceWifiOta(d) for d in data.get("list", [])]
 
-    async def update_device_wifi_version(
-        self, devices: list[tuple[str, str]]
-    ) -> None:
+    async def update_device_wifi_version(self, devices: list[tuple[str, str]]) -> None:
         """Report the current WiFi firmware version for devices to the server.
 
         This is typically called by the Android app after connecting to a

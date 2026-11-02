@@ -11,7 +11,7 @@ from rich.table import Table
 
 from ..models.chart import ChartData, ChartType
 from ..nepviewer import NepViewer
-from . import resolve_sn, resolve_sid
+from . import resolve_sid, resolve_sn
 
 console = Console()
 
@@ -28,7 +28,7 @@ def _render_bar_chart(
 ) -> None:
     """Render a horizontal bar chart with termgraph."""
     from termgraph.constants import AVAILABLE_COLORS  # type: ignore[import-untyped]
-    from termgraph.module import Data, Args, BarChart  # type: ignore[import-untyped]
+    from termgraph.module import Args, BarChart, Data  # type: ignore[import-untyped]
 
     if not values or all(v == 0 for v in values):
         console.print("[dim]  No data to chart.[/dim]")
@@ -74,7 +74,9 @@ def _downsample(
     return out_labels, out_values
 
 
-def _print_chart(chart_data: ChartData, *, title: str, suffix: str, color: str = "yellow") -> None:
+def _print_chart(
+    chart_data: ChartData, *, title: str, suffix: str, color: str = "yellow"
+) -> None:
     """Downsample and render the first series of a ChartData response."""
     if not chart_data.series:
         console.print("[dim]No chart data available.[/dim]")
@@ -96,7 +98,9 @@ class _PeriodInfo:
     label: str  # date label for the title
 
 
-def _resolve_period(period: str, date_arg: str | None, *, day_type: ChartType) -> _PeriodInfo:
+def _resolve_period(
+    period: str, date_arg: str | None, *, day_type: ChartType
+) -> _PeriodInfo:
     """Convert a period string + optional date arg into chart parameters.
 
     *day_type* is the ChartType to use for the "day" period; this differs between
@@ -110,7 +114,9 @@ def _resolve_period(period: str, date_arg: str | None, *, day_type: ChartType) -
         y, m = int(base[:4]), int(base[5:7])
         first = date(y, m, 1)
         last = date(y + m // 12, m % 12 + 1, 1) - timedelta(days=1)
-        return _PeriodInfo(ChartType.DAILY, f"{first.isoformat()}~{last.isoformat()}", " kWh", base)
+        return _PeriodInfo(
+            ChartType.DAILY, f"{first.isoformat()}~{last.isoformat()}", " kWh", base
+        )
     # year
     year_str = date_arg or str(date.today().year)
     return _PeriodInfo(ChartType.YEARLY, f"{year_str}-01-01", " kWh", year_str)
@@ -126,7 +132,10 @@ async def _chart_production(client: NepViewer, args: argparse.Namespace) -> None
 
     lines = ["Production"] if p.chart_type == ChartType.DAY else []
     chart_data = await client.get_device_statistics_chart(
-        sn, p.chart_type, date=p.chart_date, lines=lines,
+        sn,
+        p.chart_type,
+        date=p.chart_date,
+        lines=lines,
     )
     _print_chart(chart_data, title=f"Production: {sn} ({p.label})", suffix=p.suffix)
 
@@ -146,13 +155,16 @@ async def _chart_params(client: NepViewer, args: argparse.Namespace) -> None:
             table.add_row(param.name, param.unit)
         console.print(table)
         console.print(
-            f"\n  [dim]Usage: aionepviewer chart params {sn} Temperature \"AC Voltage\"[/dim]\n"
+            f'\n  [dim]Usage: aionepviewer chart params {sn} Temperature "AC Voltage"[/dim]\n'
         )
         return
 
     chart_date = args.date or date.today().isoformat()
     chart_data = await client.get_device_statistics_chart(
-        sn, ChartType.DAY, date=chart_date, lines=param_names,
+        sn,
+        ChartType.DAY,
+        date=chart_date,
+        lines=param_names,
     )
 
     colors = ["cyan", "green", "magenta", "yellow", "red", "blue"]
@@ -161,7 +173,8 @@ async def _chart_params(client: NepViewer, args: argparse.Namespace) -> None:
         color = colors[idx % len(colors)]
         labels, values = _downsample(chart_data.x_axis_data, series.data)
         _render_bar_chart(
-            labels, values,
+            labels,
+            values,
             title=f"{series.name}: {sn} ({chart_date})",
             suffix="",
             color=color,
@@ -175,9 +188,13 @@ async def _chart_site(client: NepViewer, args: argparse.Namespace) -> None:
     p = _resolve_period(args.period, args.date, day_type=ChartType.INTRADAY_POWER)
 
     chart_data = await client.get_site_statistics_chart(
-        sid, p.chart_type, date=p.chart_date,
+        sid,
+        p.chart_type,
+        date=p.chart_date,
     )
-    _print_chart(chart_data, title=f"Site Production: {sid} ({p.label})", suffix=p.suffix)
+    _print_chart(
+        chart_data, title=f"Site Production: {sid} ({p.label})", suffix=p.suffix
+    )
 
 
 # ── registration ───────────────────────────────────────────────────────
@@ -194,14 +211,29 @@ def register_chart_commands(parent_sub: argparse._SubParsersAction) -> None:  # 
 
     # chart production
     p = sub.add_parser("production", help="Production bar chart for a device")
-    p.add_argument("--sn", default=None, help="Device serial number (auto-detected if omitted)")
-    p.add_argument("--period", choices=["day", "month", "year"], default="day", help="Chart period (default: day)")
-    p.add_argument("--date", default=None, help="Date: YYYY-MM-DD (day), YYYY-MM (month), YYYY (year)")
+    p.add_argument(
+        "--sn", default=None, help="Device serial number (auto-detected if omitted)"
+    )
+    p.add_argument(
+        "--period",
+        choices=["day", "month", "year"],
+        default="day",
+        help="Chart period (default: day)",
+    )
+    p.add_argument(
+        "--date",
+        default=None,
+        help="Date: YYYY-MM-DD (day), YYYY-MM (month), YYYY (year)",
+    )
     p.set_defaults(func=_chart_production)
 
     # chart params
-    p = sub.add_parser("params", help="Intraday parameter chart (Temperature, Voltage, etc.)")
-    p.add_argument("--sn", default=None, help="Device serial number (auto-detected if omitted)")
+    p = sub.add_parser(
+        "params", help="Intraday parameter chart (Temperature, Voltage, etc.)"
+    )
+    p.add_argument(
+        "--sn", default=None, help="Device serial number (auto-detected if omitted)"
+    )
     p.add_argument("params", nargs="*", help="Parameter names (omit to list available)")
     p.add_argument("--date", default=None, help="Date (YYYY-MM-DD, default: today)")
     p.set_defaults(func=_chart_params)
@@ -209,6 +241,15 @@ def register_chart_commands(parent_sub: argparse._SubParsersAction) -> None:  # 
     # chart site
     p = sub.add_parser("site", help="Production bar chart for a site")
     p.add_argument("--sid", default=None, help="Site ID (auto-detected if omitted)")
-    p.add_argument("--period", choices=["day", "month", "year"], default="day", help="Chart period (default: day)")
-    p.add_argument("--date", default=None, help="Date: YYYY-MM-DD (day), YYYY-MM (month), YYYY (year)")
+    p.add_argument(
+        "--period",
+        choices=["day", "month", "year"],
+        default="day",
+        help="Chart period (default: day)",
+    )
+    p.add_argument(
+        "--date",
+        default=None,
+        help="Date: YYYY-MM-DD (day), YYYY-MM (month), YYYY (year)",
+    )
     p.set_defaults(func=_chart_site)

@@ -8,8 +8,8 @@ from collections.abc import Awaitable, Callable
 from datetime import datetime
 from typing import Any
 
-from rich.console import Console, Group
 from rich.columns import Columns
+from rich.console import Console, Group
 from rich.live import Live
 from rich.panel import Panel
 from rich.rule import Rule
@@ -95,14 +95,19 @@ def _device_header(
 
     grid.add_row("Status", f"{dot} {dev.status_title}")
     if dev_overview:
-        grid.add_row("Power", f"[{_power_style(float(dev_overview.now))}]{dev_overview.now} {dev_overview.now_unit}[/]")
+        grid.add_row(
+            "Power",
+            f"[{_power_style(float(dev_overview.now))}]{dev_overview.now} {dev_overview.now_unit}[/]",
+        )
         grid.add_row("Today", f"{dev_overview.today} {dev_overview.today_unit}")
     if dev.alert_code and dev.alert_code != "0000":
         grid.add_row("Alert", f"[bold red]{dev.alert_title}[/bold red]")
     if dev.version:
         grid.add_row("Firmware", f"[dim]{dev.version}[/dim]")
 
-    return Panel(grid, title=f"[bold]{dev.sn}[/bold] ({dev.model_name})", border_style="cyan")
+    return Panel(
+        grid, title=f"[bold]{dev.sn}[/bold] ({dev.model_name})", border_style="cyan"
+    )
 
 
 # ── site detail renderable ────────────────────────────────────────────
@@ -121,7 +126,9 @@ def _build_site_detail(
     flow_grid.add_column(justify="center")
 
     pv_text = f"[bold yellow]☀ PV Panel[/bold yellow]\n{energy.pv_panel.power} {energy.pv_panel.power_unit}"
-    home_text = f"[bold blue]🏠 Home[/bold blue]\n{energy.home.power} {energy.home.power_unit}"
+    home_text = (
+        f"[bold blue]🏠 Home[/bold blue]\n{energy.home.power} {energy.home.power_unit}"
+    )
     grid_text = f"[bold white]⚡ Grid[/bold white]\n{energy.grid.power} {energy.grid.power_unit}"
 
     flow_grid.add_row(pv_text, "  →  ", home_text)
@@ -139,8 +146,13 @@ def _build_site_detail(
     prod_grid = Table.grid(padding=(0, 3))
     prod_grid.add_column(style="bold")
     prod_grid.add_column()
-    prod_grid.add_row("Current", f"[bold yellow]{prod.total_now}[/bold yellow] {prod.total_now_unit}")
-    prod_grid.add_row("Today", f"{prod.today} {prod.today_unit}  ([green]{prod.today_money}[/green] {prod.total_money_unit})")
+    prod_grid.add_row(
+        "Current", f"[bold yellow]{prod.total_now}[/bold yellow] {prod.total_now_unit}"
+    )
+    prod_grid.add_row(
+        "Today",
+        f"{prod.today} {prod.today_unit}  ([green]{prod.today_money}[/green] {prod.total_money_unit})",
+    )
     prod_grid.add_row("Month", f"{prod.month} {prod.month_unit}")
     prod_grid.add_row("Year", f"{prod.year} {prod.year_unit}")
     prod_grid.add_row("Lifetime", f"[bold]{prod.total}[/bold] {prod.total_unit}")
@@ -160,16 +172,20 @@ def _build_site_detail(
         parts.append(_device_header(dev, dev_ov))
         if dev.modules:
             module_boxes = [_module_panel(m) for m in dev.modules]
-            parts.append(Columns(module_boxes, equal=False, expand=False, padding=(0, 1)))
+            parts.append(
+                Columns(module_boxes, equal=False, expand=False, padding=(0, 1))
+            )
 
     # Site-level alert
     if not overview.alert.is_ok:
         parts.append("")
-        parts.append(Panel(
-            f"[bold red]{overview.alert.title}[/bold red]\n{overview.alert.description}",
-            title="⚠ Alert",
-            border_style="red",
-        ))
+        parts.append(
+            Panel(
+                f"[bold red]{overview.alert.title}[/bold red]\n{overview.alert.description}",
+                title="⚠ Alert",
+                border_style="red",
+            )
+        )
 
     return parts
 
@@ -208,23 +224,30 @@ async def _render_status(client: NepViewer, site_filter: str | None) -> Group:
         header = Table.grid(padding=(0, 3))
         header.add_column(style="bold cyan")
         header.add_column()
-        header.add_row("Current Power", f"[bold yellow]{prod.total_now}[/bold yellow] {prod.total_now_unit}")
+        header.add_row(
+            "Current Power",
+            f"[bold yellow]{prod.total_now}[/bold yellow] {prod.total_now_unit}",
+        )
         header.add_row("Today", f"{prod.today} {prod.today_unit}")
         header.add_row("This Month", f"{prod.month} {prod.month_unit}")
         header.add_row("This Year", f"{prod.year} {prod.year_unit}")
         header.add_row("Lifetime", f"[bold]{prod.total}[/bold] {prod.total_unit}")
-        header.add_row("Revenue", f"[green]{prod.total_money}[/green] {prod.total_money_unit}")
+        header.add_row(
+            "Revenue", f"[green]{prod.total_money}[/green] {prod.total_money_unit}"
+        )
 
         benefit = overview.benefit
         header.add_row("", "")
         header.add_row("CO₂ Avoided", f"{benefit.co2} {benefit.co2_unit}")
         header.add_row("Trees Equivalent", f"{benefit.tree} {benefit.tree_unit}")
 
-        parts.append(Panel(
-            header,
-            title=f"[bold]NEP Solar Dashboard[/bold]  ({overview.site_count} sites, {overview.device_count} devices)",
-            border_style="cyan",
-        ))
+        parts.append(
+            Panel(
+                header,
+                title=f"[bold]NEP Solar Dashboard[/bold]  ({overview.site_count} sites, {overview.device_count} devices)",
+                border_style="cyan",
+            )
+        )
 
     # Per-site detail sections
     for name, so, sm in site_data:
@@ -233,7 +256,9 @@ async def _render_status(client: NepViewer, site_filter: str | None) -> Group:
             parts.append(Rule(f"[bold]{name}[/bold]"))
         parts.extend(_build_site_detail(so, sm))
 
-    parts.append(Text(f"\n  Last refresh: {datetime.now().strftime('%H:%M:%S')}", style="dim"))
+    parts.append(
+        Text(f"\n  Last refresh: {datetime.now().strftime('%H:%M:%S')}", style="dim")
+    )
     return Group(*parts)
 
 
@@ -298,6 +323,7 @@ async def _cmd_status(client: NepViewer, args: argparse.Namespace) -> None:
 
 async def _cmd_weather(client: NepViewer, args: argparse.Namespace) -> None:
     from . import resolve_sid
+
     sid = await resolve_sid(client, args.sid)
     await _display(lambda: _render_weather(client, sid))
 
@@ -312,13 +338,23 @@ def register_dashboard_commands(parent_sub: argparse._SubParsersAction) -> None:
         "status",
         help="Dashboard with energy flow, production, and panels",
     )
-    p.add_argument("--site", "-s", default=None, metavar="SID", help="Show only this site (default: all)")
-    p.add_argument("--watch", "-w", action="store_true", help="Auto-refresh every 5 minutes")
+    p.add_argument(
+        "--site",
+        "-s",
+        default=None,
+        metavar="SID",
+        help="Show only this site (default: all)",
+    )
+    p.add_argument(
+        "--watch", "-w", action="store_true", help="Auto-refresh every 5 minutes"
+    )
     p.set_defaults(func=_cmd_status)
 
     p = parent_sub.add_parser(
         "weather",
         help="7-day weather forecast for a site",
     )
-    p.add_argument("sid", nargs="?", default=None, help="Site ID (auto-detected if omitted)")
+    p.add_argument(
+        "sid", nargs="?", default=None, help="Site ID (auto-detected if omitted)"
+    )
     p.set_defaults(func=_cmd_weather)

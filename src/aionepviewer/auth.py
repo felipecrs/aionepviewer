@@ -86,9 +86,7 @@ class NepAuth:
 
         # Sign-in is auth-specific; parse the response inline.
         if resp.status in (401, 403):
-            raise NepAuthError(
-                f"Authentication failed (HTTP {resp.status})"
-            )
+            raise NepAuthError(f"Authentication failed (HTTP {resp.status})")
 
         try:
             result = await resp.json(content_type=None)
@@ -149,7 +147,9 @@ class NepAuth:
     ) -> aiohttp.ClientResponse:
         url = f"{self._host}{API_BASE_PATH}{path}"
 
-        body_bytes = json.dumps(json_body, separators=(",", ":")).encode() if json_body else b""
+        body_bytes = (
+            json.dumps(json_body, separators=(",", ":")).encode() if json_body else b""
+        )
 
         headers = dict(DEFAULT_HEADERS)
         headers["sign"] = self._compute_sign(body_bytes)

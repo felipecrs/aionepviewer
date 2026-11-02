@@ -7,18 +7,19 @@ from typing import Any
 from unittest.mock import Mock
 
 import aiohttp
-import pytest
 
 # aiohttp 3.14 added a required keyword-only stream_writer parameter to
 # ClientResponse.__init__. aioresponses does not supply it yet.
 _response_init = aiohttp.ClientResponse.__init__
 if "stream_writer" in inspect.signature(_response_init).parameters:
 
-    def _patched_response_init(self: aiohttp.ClientResponse, *args: Any, **kwargs: Any) -> None:
+    def _patched_response_init(
+        self: aiohttp.ClientResponse, *args: Any, **kwargs: Any
+    ) -> None:
         kwargs.setdefault("stream_writer", Mock(output_size=0))
         _response_init(self, *args, **kwargs)
 
-    setattr(aiohttp.ClientResponse, "__init__", _patched_response_init)
+    setattr(aiohttp.ClientResponse, "__init__", _patched_response_init)  # noqa: B010
 
 SIGN_IN_RESPONSE = {
     "code": 200,

@@ -31,9 +31,7 @@ class AlertInfo:
     def description(self) -> str:
         return self.raw_data.get(
             "desc",
-            self.raw_data.get(
-                "description", self.raw_data.get("alertDescription", "")
-            ),
+            self.raw_data.get("description", self.raw_data.get("alertDescription", "")),
         )
 
     @property
