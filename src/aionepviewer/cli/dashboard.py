@@ -1,4 +1,4 @@
-"""Human-friendly dashboard commands with rich formatting and --watch support."""
+"""Dashboard commands with rich formatting and --watch support."""
 
 from __future__ import annotations
 
@@ -306,7 +306,7 @@ async def _cmd_weather(client: NepViewer, args: argparse.Namespace) -> None:
 
 
 def register_dashboard_commands(parent_sub: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
-    """Register human-friendly dashboard commands."""
+    """Register dashboard commands."""
 
     p = parent_sub.add_parser(
         "status",

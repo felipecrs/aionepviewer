@@ -1,36 +1,29 @@
-> [!IMPORTANT]
-> This is AI-generated content with very little QA on top.
-
 # aionepviewer
 
 Async Python library for the [NEP solar inverter](https://www.nepviewer.com/) cloud API (`api.nepviewer.net`).
 
-Designed as a backend library for [Home Assistant](https://www.home-assistant.io/) integrations, following the [HA API library best practices](https://developers.home-assistant.io/docs/api_lib_index/).
+Built for [Home Assistant](https://www.home-assistant.io/) integrations, following the [Home Assistant API library guidelines](https://developers.home-assistant.io/docs/api_lib_index/).
 
-## Important: Single-Session Limitation
+## Single-session limit
 
-The NEP API only allows **one active session per account** at a time. If you log in from a second device or client, the first session's token is immediately invalidated and all its requests will fail with a 401 error.
+The NEP API allows only one active session per account. Logging in from a second device or client invalidates earlier sessions, and subsequent requests return HTTP 401.
 
-This means:
-- You **cannot** use the same NEP account simultaneously from the web portal and this library (or from two library instances).
-- If your Home Assistant integration suddenly starts getting authentication errors, check if someone opened the NEP web portal or mobile app with the same account.
-- The library handles this gracefully by raising `NepAuthError` and clearing the token, so the next request will trigger a re-authentication.
+Do not use the same account simultaneously from the web portal, mobile app, and this library. If a session is invalidated, the library raises `NepAuthError` and clears the stored token so the next request can re-authenticate.
 
 ## Features
 
-- **Fully async** — built on `aiohttp`, accepts an externally managed `ClientSession`
-- **Complete API coverage** — authentication, sites, devices, modules, statistics, playback, weather, reports
-- **Module-level monitoring** — individual microinverter panel data (per-PLC serial number)
-- **Energy flow** — PV panel, home, grid, battery, and generator power flow data
-- **Production statistics** — today, yesterday, month, year, and lifetime energy with currency values
-- **Environmental benefit** — CO₂ saved, trees equivalent, car km avoided, light hours, oil barrels
-- **Charts & playback** — intraday (5-min), daily, monthly, yearly chart data
-- **Weather** — 7-day forecast for each site
-- **Report settings** — read and configure email notification reports (daily/weekly/monthly)
-- **Account management** — user profile info and explicit logout
-- **Automatic token management** — JWT sign-in with auto-refresh on expiry
-- **Request signing** — MD5-based `sign` header computed automatically
-- **Type-annotated** — full type hints with `from __future__ import annotations`
+- Async client built on `aiohttp`, accepting an externally managed `ClientSession`
+- Endpoints for authentication, sites, devices, modules, statistics, playback, weather, and reports
+- Per-panel microinverter data by PLC serial number
+- Power flow across PV panels, home, grid, battery, and generator
+- Production statistics for today, yesterday, current month, year, and lifetime
+- Environmental savings: CO₂, tree equivalent, vehicle kilometers avoided, lighting hours, and oil barrels
+- Intraday (5-minute), daily, monthly, and yearly chart data
+- 7-day weather forecasts per site
+- Email report configuration (daily, weekly, and monthly)
+- Token management with automatic re-authentication before expiry
+- Automatic request signing with MD5
+- Type annotations across all models and methods
 
 ## Installation
 
@@ -50,7 +43,7 @@ To also install the CLI tool:
 pip install aionepviewer[cli]
 ```
 
-## Quick Start
+## Quick start
 
 ```python
 import asyncio
@@ -89,9 +82,9 @@ async def main():
 asyncio.run(main())
 ```
 
-## Home Assistant Integration Usage
+## Home Assistant integration
 
-This library is designed to be used inside a Home Assistant custom integration. The caller provides the `aiohttp.ClientSession` (for connection pooling and SSL), and the library handles authentication and data fetching.
+Pass Home Assistant's shared `aiohttp.ClientSession` when creating the client:
 
 ```python
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -134,13 +127,13 @@ async def async_setup_entry(hass, entry):
     await coordinator.async_config_entry_first_refresh()
 ```
 
-## API Reference
+## API reference
 
 ### `NepViewer(session, email, password, host=DEFAULT_HOST)`
 
 Main client class.
 
-#### Authentication & Account
+#### Authentication and account
 
 | Method | Description |
 |---|---|
@@ -148,7 +141,7 @@ Main client class.
 | `logout()` | Explicitly log out and invalidate the session token |
 | `get_account_info()` | Get detailed user profile (`AccountInfo`) |
 
-#### Global Overview
+#### Global overview
 
 | Method | Description |
 |---|---|
@@ -178,14 +171,14 @@ Main client class.
 | `get_device_date_statistics(sn, stat_type, date)` | Power/consumption/economic for a period |
 | `get_device_playback(sn, start, end)` | 5-min interval data with per-module breakdown |
 
-#### Report Settings
+#### Report settings
 
 | Method | Description |
 |---|---|
 | `get_report_settings(sid, sn)` | Get email report notification settings for a device |
 | `set_report_settings(sn, ...)` | Configure daily/weekly/monthly email reports and alert windows |
 
-### Chart Types
+### Chart types
 
 | `ChartType` | Description |
 |---|---|
@@ -207,11 +200,11 @@ Main client class.
 
 ## CLI
 
-The package includes a command-line tool with three categories of commands:
+The package includes a command-line tool with three subcommands:
 
-1. **`api`** — Raw API commands that always output JSON (1:1 mapping to API endpoints)
-2. **`chart`** — Terminal bar charts for humans (powered by termgraph)
-3. **Dashboard commands** — Rich, colorful human-friendly views with `--watch` support
+- `api`: JSON output mapped directly to API endpoints
+- `chart`: terminal bar charts rendered with termgraph
+- `status` and `weather`: formatted status displays with optional `--watch` auto-refresh
 
 ### Configuration
 
@@ -239,7 +232,7 @@ password = "secret"
 host = "https://api.nepviewer.net"   # optional, only if non-default
 ```
 
-### Authentication Precedence
+### Authentication precedence
 
 Credentials are resolved in this order (first non-empty value wins):
 
@@ -261,7 +254,7 @@ export AIONEPVIEWER_PASSWORD=secret
 aionepviewer status
 ```
 
-### Dashboard Commands (Human-Friendly)
+### Dashboard commands
 
 ```bash
 aionepviewer status                    # Full dashboard: overview + all sites with panels
@@ -273,7 +266,7 @@ aionepviewer weather [sid]             # 7-day weather forecast with icons
 
 Site ID is auto-detected if omitted (uses the first site on your account).
 
-### Chart Commands (Terminal Graphs)
+### Chart commands
 
 ```bash
 # Device production charts
@@ -295,7 +288,7 @@ aionepviewer chart site --period month                 # Daily bars for current 
 
 Device SN and Site ID are auto-detected if omitted.
 
-### API Commands (JSON Output)
+### API commands
 
 All API commands output raw JSON. Use these for scripting or piping to `jq`.
 
@@ -338,7 +331,7 @@ uv sync
 uv run pytest
 
 # Type checking
-uv run mypy aionepviewer
+uv run mypy src/aionepviewer
 ```
 
 ## License

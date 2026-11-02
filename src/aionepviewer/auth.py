@@ -84,7 +84,7 @@ class NepAuth:
         body = {"account": self._email, "password": self._password}
         resp = await self._raw_request("POST", "/sign-in", json_body=body, auth=False)
 
-        # sign-in is auth-specific — parse the response inline.
+        # Sign-in is auth-specific; parse the response inline.
         if resp.status in (401, 403):
             raise NepAuthError(
                 f"Authentication failed (HTTP {resp.status})"

@@ -224,7 +224,7 @@ async def _cmd_config_path(_client: Any, _args: argparse.Namespace) -> None:
     exists = path.exists()
     print(str(path))
     if not exists:
-        print("(file does not exist yet — run 'aionepviewer configure' to create it)",
+        print("(file does not exist yet; run 'aionepviewer configure' to create it)",
               file=sys.stderr)
 
 

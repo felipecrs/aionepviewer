@@ -1,4 +1,4 @@
-"""API subcommands — 1:1 mapping to NepViewer client methods, JSON output only."""
+"""API subcommands: 1:1 mapping to NepViewer client methods, JSON output only."""
 
 from __future__ import annotations
 

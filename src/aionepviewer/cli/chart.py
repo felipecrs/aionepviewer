@@ -1,4 +1,4 @@
-"""Chart subcommands — terminal bar charts via termgraph for humans."""
+"""Chart subcommands: terminal bar charts via termgraph."""
 
 from __future__ import annotations
 
@@ -99,7 +99,7 @@ class _PeriodInfo:
 def _resolve_period(period: str, date_arg: str | None, *, day_type: ChartType) -> _PeriodInfo:
     """Convert a period string + optional date arg into chart parameters.
 
-    *day_type* is the ChartType to use for the "day" period — differs between
+    *day_type* is the ChartType to use for the "day" period; this differs between
     device (DAY) and site (INTRADAY_POWER) endpoints.
     """
     if period == "day":
@@ -162,7 +162,7 @@ async def _chart_params(client: NepViewer, args: argparse.Namespace) -> None:
         labels, values = _downsample(chart_data.x_axis_data, series.data)
         _render_bar_chart(
             labels, values,
-            title=f"{series.name} — {sn} ({chart_date})",
+            title=f"{series.name}: {sn} ({chart_date})",
             suffix="",
             color=color,
         )
@@ -187,7 +187,7 @@ def register_chart_commands(parent_sub: argparse._SubParsersAction) -> None:  # 
     """Register the ``chart`` subcommand group."""
     chart_parser = parent_sub.add_parser(
         "chart",
-        help="Terminal bar charts for humans (termgraph)",
+        help="Terminal bar charts (termgraph)",
         description="Visual bar charts rendered in the terminal using termgraph.",
     )
     sub = chart_parser.add_subparsers(dest="chart_command", required=True)
