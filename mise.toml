@@ -2,21 +2,25 @@
 python = "3.14.10"
 uv = "0.13.6"
 
+[settings]
+experimental = true
+python.uv_venv_auto = "create|source"
+
 [env]
 UV_PYTHON_PREFERENCE = "only-system"
 
-[tasks.install]
-description = "Install dependencies"
+[deps.uv]
+auto = true
 run = "uv sync --frozen"
 
 [tasks.lint]
 description = "Lint, format, and type check"
-run = "uv run ruff check && uv run ruff format --check && uv run mypy ."
+run = "ruff check && ruff format --check && mypy ."
+
+[tasks.fix-lint]
+description = "Fix lint and format issues"
+run = "ruff check --fix && ruff format"
 
 [tasks.test]
 description = "Run tests"
-run = "uv run pytest"
-
-[tasks.build]
-description = "Build package distributions"
-run = "uv build"
+run = "pytest"
