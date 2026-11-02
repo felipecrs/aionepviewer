@@ -72,5 +72,4 @@ uv lock --upgrade-package aionepviewer
 git add uv.lock
 uv build
 """
-commit_author = "github-actions <actions@users.noreply.github.com>"
 
