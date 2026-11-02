@@ -25,6 +25,7 @@ jobs:
 
     env:
       MISE_PYTHON_VERSION: ${{ matrix.python-version }}
+      MISE_AUTO_INSTALL: "false"
 
     steps:
       - uses: actions/checkout@v7
