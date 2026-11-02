@@ -1,0 +1,21 @@
+[tools]
+python = "3.14.10"
+uv = "0.13.6"
+
+[tasks.install]
+description = "Install dependencies"
+run = "uv sync --frozen"
+
+[tasks.test]
+description = "Run tests"
+run = "uv run pytest"
+
+[tasks.typecheck]
+description = "Run type checks"
+run = "uv run mypy src/ tests/"
+
+[tasks.build]
+description = "Build package distributions"
+run = "uv build"
+
+
