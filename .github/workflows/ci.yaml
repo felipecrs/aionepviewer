@@ -25,7 +25,6 @@ jobs:
 
     env:
       MISE_PYTHON_VERSION: ${{ matrix.python-version }}
-      UV_PYTHON: ${{ matrix.python-version }}
 
     steps:
       - uses: actions/checkout@v7

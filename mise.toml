@@ -7,11 +7,10 @@ experimental = true
 python.uv_venv_auto = "create|source"
 
 [env]
-UV_PYTHON_PREFERENCE = "only-system"
+UV_PYTHON = { value = "{{ tools.python.path }}", tools = true }
 
 [deps.uv]
 auto = true
-run = "uv sync --frozen"
 
 [tasks.lint]
 description = "Lint, format, and type check"
