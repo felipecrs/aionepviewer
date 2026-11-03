@@ -64,6 +64,7 @@ jobs:
         id: release
         run: mise exec -- semantic-release version --no-commit --no-changelog
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_COMMIT_AUTHOR: "${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>"
 
       - name: Publish to GitHub Release
