@@ -31,13 +31,7 @@ Do not use the same account simultaneously from the web portal, mobile app, and 
 pip install aionepviewer
 ```
 
-Or with [uv](https://docs.astral.sh/uv/):
-
-```bash
-uv add aionepviewer
-```
-
-To also install the CLI tool:
+To install the CLI tool:
 
 ```bash
 pip install aionepviewer[cli]
@@ -82,52 +76,6 @@ async def main():
 
 
 asyncio.run(main())
-```
-
-## Home Assistant integration
-
-Pass Home Assistant's shared `aiohttp.ClientSession` when creating the client:
-
-```python
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from aionepviewer import NepViewer, NepAuthError
-
-
-async def async_setup_entry(hass, entry):
-    session = async_get_clientsession(hass)
-    client = NepViewer(
-        session,
-        entry.data["email"],
-        entry.data["password"],
-    )
-
-    try:
-        await client.authenticate()
-    except NepAuthError:
-        raise ConfigEntryAuthFailed("Invalid credentials")
-
-    # Use with DataUpdateCoordinator
-    async def async_update_data():
-        sites = await client.get_sites()
-        result = {}
-        for site in sites:
-            overview = await client.get_site_overview(site.sid)
-            modules = await client.get_site_modules(site.sid)
-            result[site.sid] = {
-                "site": site,
-                "overview": overview,
-                "modules": modules,
-            }
-        return result
-
-    coordinator = DataUpdateCoordinator(
-        hass,
-        logger,
-        name="nep",
-        update_method=async_update_data,
-        update_interval=timedelta(seconds=300),
-    )
-    await coordinator.async_config_entry_first_refresh()
 ```
 
 ## API reference
@@ -323,20 +271,3 @@ aionepviewer api device-wifi-ota <sn...>               # WiFi OTA status
 aionepviewer api report-settings <sid> <sn>            # Report notification settings
 aionepviewer api report-setup <sn> --daily --monthly   # Configure reports
 ```
-
-## Development
-
-```bash
-# Install dev dependencies
-uv sync
-
-# Run tests
-uv run pytest
-
-# Type checking
-uv run mypy src/aionepviewer
-```
-
-## License
-
-MIT

@@ -78,4 +78,3 @@ version_toml = [
 ]
 build_command = "uv build"
 allow_zero_version = true
-
