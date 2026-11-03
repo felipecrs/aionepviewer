@@ -1,6 +1,6 @@
 [project]
 name = "aionepviewer"
-version = "0.1.0"
+version = "0.0.0"
 description = "Async Python library for the NEP solar inverter cloud API (nepviewer.net)"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -76,9 +76,6 @@ ignore = [
 version_toml = [
     "pyproject.toml:project.version",
 ]
-build_command = """
-uv lock --upgrade-package aionepviewer
-git add uv.lock
-uv build
-"""
+build_command = "uv build"
+allow_zero_version = true
 
