@@ -197,7 +197,7 @@ provides-extras = ["cli"]
 [package.metadata.requires-dev]
 dev = [
     { name = "aionepviewer", extras = ["cli"] },
-    { name = "aioresponses", specifier = ">=0.7" },
+    { name = "aioresponses", specifier = ">=0.7.9" },
     { name = "mypy", specifier = ">=1.10" },
     { name = "pytest", specifier = ">=8.0" },
     { name = "pytest-asyncio", specifier = ">=0.24" },
