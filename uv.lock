@@ -199,7 +199,7 @@ dev = [
     { name = "aionepviewer", extras = ["cli"] },
     { name = "aioresponses", specifier = ">=0.7.9" },
     { name = "mypy", specifier = ">=1.10" },
-    { name = "pytest", specifier = ">=8.0" },
+    { name = "pytest", specifier = ">=8.4.2" },
     { name = "pytest-asyncio", specifier = ">=0.24" },
     { name = "python-semantic-release", specifier = ">=10.7" },
     { name = "ruff", specifier = ">=0.17.3" },
