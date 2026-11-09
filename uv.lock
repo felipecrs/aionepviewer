@@ -188,7 +188,7 @@ dev = [
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.9.0" },
     { name = "platformdirs", marker = "extra == 'cli'", specifier = ">=4.0" },
-    { name = "rich", marker = "extra == 'cli'", specifier = ">=13.0" },
+    { name = "rich", marker = "extra == 'cli'", specifier = ">=15.0.0" },
     { name = "termgraph", marker = "extra == 'cli'", specifier = ">=0.5.0" },
     { name = "tomli-w", marker = "extra == 'cli'", specifier = ">=1.0" },
 ]
