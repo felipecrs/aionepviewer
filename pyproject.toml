@@ -32,7 +32,7 @@ cli = [
 dev = [
     "aionepviewer[cli]",
     "pytest>=8.0",
-    "pytest-asyncio>=0.24",
+    "pytest-asyncio>=1.5.0",
     "aioresponses>=0.7.9",
     "mypy>=1.10",
     "python-semantic-release>=10.7",
