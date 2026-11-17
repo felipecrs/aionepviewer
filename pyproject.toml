@@ -25,7 +25,7 @@ cli = [
     "rich>=13.0",
     "termgraph>=0.5.0",
     "platformdirs>=4.0",
-    "tomli-w>=1.0",
+    "tomli-w>=1.2.0",
 ]
 
 [dependency-groups]
