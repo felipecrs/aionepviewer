@@ -189,7 +189,7 @@ requires-dist = [
     { name = "aiohttp", specifier = ">=3.9.0" },
     { name = "platformdirs", marker = "extra == 'cli'", specifier = ">=4.0" },
     { name = "rich", marker = "extra == 'cli'", specifier = ">=13.0" },
-    { name = "termgraph", marker = "extra == 'cli'", specifier = ">=0.5.0" },
+    { name = "termgraph", marker = "extra == 'cli'", specifier = ">=0.8.1" },
     { name = "tomli-w", marker = "extra == 'cli'", specifier = ">=1.0" },
 ]
 provides-extras = ["cli"]
@@ -1510,14 +1510,14 @@ wheels = [
 
 [[package]]
 name = "termgraph"
-version = "0.8.0"
+version = "0.8.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/54/c2/2343949c5a298fdfc025f151369ec2952ae3f013987cd404fa046ac5d8d8/termgraph-0.8.0.tar.gz", hash = "sha256:8e0cad7433d531fb041f7cbd1189261b784a55488726f02aa29ffe9d565d099b", size = 464884, upload-time = "2026-10-26T13:29:05.755Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/78/82/0954112fddc3b95cceed81eb538ad85685d2e911e0ba8de63708acc60489/termgraph-0.8.1.tar.gz", hash = "sha256:3bf9f3684fcb0443735fd4625e43489ab7a2dbd828edc8bc9135fb1398e10410", size = 470337, upload-time = "2026-11-07T17:59:17.79Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/27/21/c79fcdc30f81880407416ae004cc577176c439f19bdeeaefabf844653c95/termgraph-0.8.0-py3-none-any.whl", hash = "sha256:aa38be1c05c4bdab89841829dfcd4515c79df4b3b38df5fb33e77a2c6c6bff82", size = 18774, upload-time = "2026-10-26T13:29:04.496Z" },
+    { url = "https://files.pythonhosted.org/packages/15/5c/2c77ba0159633514def05ffd7f8ba2c459c23c888294bc71fc41f50fbfa7/termgraph-0.8.1-py3-none-any.whl", hash = "sha256:2facbf2f54a833a4b4f7f458da0880aa01e3da52a557de6fbb3f76d392bdb9f4", size = 20351, upload-time = "2026-11-07T17:59:16.154Z" },
 ]
 
 [[package]]
