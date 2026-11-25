@@ -2,7 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
   "dependencyDashboard": true,
-  "rangeStrategy": "bump",
+  "rangeStrategy": "update-lockfile",
   "semanticCommits": "enabled",
   "lockFileMaintenance": {
     "enabled": true,
@@ -10,18 +10,28 @@
   },
   "packageRules": [
     {
+      "description": "Never touch the supported Python floor; bump it by hand when dropping a version",
+      "matchDepTypes": ["requires-python"],
+      "enabled": false
+    },
+    {
+      "description": "Pin dev dependencies exactly, like the Home Assistant libs",
+      "matchDepTypes": ["dependency-groups"],
+      "rangeStrategy": "pin"
+    },
+    {
       "description": "Automerge non-major dev updates",
-      "matchDepTypes": ["devDependencies", "tools", "action", "uses-with"],
+      "matchDepTypes": ["dependency-groups", "tools", "action", "uses-with"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     },
     {
-      "matchDepTypes": ["dependencies"],
+      "matchDepTypes": ["project.dependencies", "project.optional-dependencies"],
       "semanticCommitType": "build",
       "semanticCommitScope": "deps"
     },
     {
-      "matchDepTypes": ["devDependencies", "tools"],
+      "matchDepTypes": ["dependency-groups", "tools"],
       "semanticCommitType": "build",
       "semanticCommitScope": "deps-dev"
     },
