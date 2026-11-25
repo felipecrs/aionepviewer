@@ -197,12 +197,12 @@ provides-extras = ["cli"]
 [package.metadata.requires-dev]
 dev = [
     { name = "aionepviewer", extras = ["cli"] },
-    { name = "aioresponses", specifier = ">=0.7.9" },
-    { name = "mypy", specifier = ">=1.10" },
-    { name = "pytest", specifier = ">=8.0" },
-    { name = "pytest-asyncio", specifier = ">=0.24" },
-    { name = "python-semantic-release", specifier = ">=10.7" },
-    { name = "ruff", specifier = ">=0.17.3" },
+    { name = "aioresponses", specifier = "==0.7.9" },
+    { name = "mypy", specifier = "==2.4.1" },
+    { name = "pytest", specifier = "==9.2.0" },
+    { name = "pytest-asyncio", specifier = "==1.4.1.post1" },
+    { name = "python-semantic-release", specifier = "==10.7.0" },
+    { name = "ruff", specifier = "==0.17.3" },
 ]
 
 [[package]]
