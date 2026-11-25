@@ -10,7 +10,7 @@ class DeviceStatus(IntEnum):
     """Device online/offline status."""
 
     ONLINE = 0
-    OFFLINE = -1
+    OFFLINE = 1
 
 
 class AlertInfo:

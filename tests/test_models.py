@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
+
 from aionepviewer.models import (
     AlertInfo,
     AuthData,
     ChartData,
     DateStatistics,
     Device,
+    DeviceStatisticsOverview,
     DeviceWifiOta,
     EnergyFlow,
     Module,
@@ -93,7 +97,7 @@ class TestDevice:
         assert device.is_online is True
 
     def test_offline(self) -> None:
-        device = Device({"status": -1, "statusTitle": "offline"})
+        device = Device({"status": 1, "statusTitle": "offline"})
         assert device.is_online is False
 
 
@@ -278,9 +282,20 @@ class TestWeather:
         assert weather.forecasts[0].temp == 20
 
 
+class TestLastUpdateDatetime:
+    def test_site_local_time(self) -> None:
+        overview = DeviceStatisticsOverview({"lastUpdateTime": 1795604437})
+        assert overview.last_update_datetime(ZoneInfo("America/Sao_Paulo")) == datetime(
+            2026, 11, 25, 14, 0, 37, tzinfo=UTC
+        )
+
+    def test_never_reported(self) -> None:
+        assert DeviceStatisticsOverview({}).last_update_datetime(UTC) is None
+
+
 class TestSiteStatusCounts:
     def test_counts(self) -> None:
-        raw = {"siteCount": 3, "statusMap": {"0": 2, "-1": 1}}
+        raw = {"siteCount": 3, "statusMap": {"-1": 3, "0": 2, "1": 1}}
         counts = SiteStatusCounts(raw)
         assert counts.online_count == 2
         assert counts.offline_count == 1
