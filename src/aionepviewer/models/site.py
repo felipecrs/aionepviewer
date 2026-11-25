@@ -448,4 +448,4 @@ class SiteStatusCounts:
 
     @property
     def offline_count(self) -> int:
-        return self.status_map.get("-1", 0)
+        return self.status_map.get("1", 0)

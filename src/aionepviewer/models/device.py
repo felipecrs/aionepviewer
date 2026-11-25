@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, tzinfo
 from typing import Any
 
 from .alert import DeviceStatus
@@ -338,7 +339,16 @@ class DeviceStatisticsOverview:
 
     @property
     def last_update_time(self) -> int:
+        """Local time of the site encoded as if it were UTC, not a real epoch."""
         return self.raw_data.get("lastUpdateTime", 0)
+
+    def last_update_datetime(self, time_zone: tzinfo) -> datetime | None:
+        """Return when the device last reported, given the time zone of its site."""
+        if not self.last_update_time:
+            return None
+        return datetime.fromtimestamp(self.last_update_time, UTC).replace(
+            tzinfo=time_zone
+        )
 
     @property
     def is_consumption(self) -> bool:
